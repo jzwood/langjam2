@@ -43,15 +43,17 @@ To get your lang added to the sheet, fill out this google form: @TODO
 - You may work in teams
 - PL must adhere to theme
   - include an explanation of how your PL fits the theme in your README.md
+- Your language must not require paying any money or sharing any personal information to compile or use.
+    - examples include 3rd party service, API, or subscription
 - Submission must include at least 1 sample program with **clear instructions on
   how to run it**
 
 ### AI POLICY
 
 You may use AI however you like; however, your README.md must include the
-section: `##
-AI USAGE`, which fully documents how AI was used in your
-submission. Failure to include heading and disclosure may result in
+section: `## AI USAGE`, which fully documents how AI was used, or not used, in
+your submission. The final submitted language must not require AI to compiler
+or run. Failure to include heading and disclosure may result in
 disqualification from the jam.
 
 ### SCHEDULE
