@@ -1,9 +1,10 @@
 /*
- * EXAMPLE PROGRAM
- * GRAMMAR:
+ * EXAMPLE GRAMMAR
  *  EXPR := INT | OP EXPR EXPR
  *  OP := '+' | '*'
  */
+
+// PROGRAM SRC CODE
 const PROGRAM = "+ 4 * 2 7";
 
 // TOKENIZED PROGRAM
@@ -11,8 +12,8 @@ const TOKENS = ["+", 4, "*", 2, 7];
 
 /*
  * PARSED AST
- * Your language is NOT REQUIRED to have a parser.
- * If your interpreter only raw AST nodes that's perfectly acceptable.
+ * Your language is NOT REQUIRED to have a parser. If your interpreter only
+ * consumes raw AST nodes that's perfectly acceptable.
  */
 const MATH_EXPRESSION = {
   type: "OP",
@@ -28,7 +29,7 @@ const MATH_EXPRESSION = {
 
 /*
  * INTERPRETER
- * Evaluates AST expression
+ * evaluates AST expression
  */
 function interpreter(expr) {
   switch (expr.type) {
@@ -47,7 +48,7 @@ function interpreter(expr) {
 
 /*
  * TRANSPILER
- * Outputs AST to javascript
+ * outputs AST to javascript
  */
 function transpiler(expr) {
   switch (expr.type) {
