@@ -1,4 +1,4 @@
-# PROGRAMMING LANGUAGE JAM #2 (PLJ2)
+# PROGRAMMING LANGUAGE JAM No. 2
 
 ## OVERVIEW
 
@@ -8,7 +8,7 @@ The #language-makers programming language jam is a
 - small scope
 - max creativity
 
-opportunity to make a new programming language.
+opportunity to create a new programming language.
 
 ## HOW IT WORKS
 
@@ -19,27 +19,24 @@ fits the jam's theme.
 
 This year's theme is
 
-> recursion is not recursion is not recursion
+> corecursion
 
 Feel free to interpret the theme as literally or figuratively as you want. Get
 creative and have fun!
 
 ### SUBMISSIONS
 
-Fork this repo and create a PR where you add your language to the `/submissions`
-directory. Put your language into a repo named after your language.
+Fork this repo and create a PR that adds your language to the `/submissions`
+directory. Put your language into a repo named after your language:
 
-    ├── submissions
-        ├── <pl-name-1>
-        │    ├── README.md
-        │    ├── src
-        ├── <pl-name-2>
-             ├── README.md
-             ├── src
+    ├─ submissions
+       ├─ <pl-name>
+           ├─ README.md
+           ├─ src
 
 ## RULES
 
-- Your PL <span style="background-color: yellow;">may not exceed 1000 LOC</span>
+- Your PL <u>may not exceed 1000 LOC</u>
   - dependencies do not count towards LOC
   - configs and build files do not count towards LOC
   - any attempts to circumvent LOC limit may result in disqualification
@@ -56,13 +53,16 @@ directory. Put your language into a repo named after your language.
 
 ### AI POLICY
 
-You may use AI however you like; however, your README.md must include the
-section: `## AI USAGE`, which fully documents how AI was used, or not used, in
-your submission. The final submitted language must not require AI to compiler or
-run. Failure to include heading and disclosure may result in disqualification
-from the jam.
+You may use AI however you like; however, your README.md must fully document
+how AI was used, or not used, in your submission. The final submitted language
+must not require AI to compiler or run. Failure to disclosure AI usage result
+in disqualification from the jam.
 
 ### SCHEDULE
+
+TBD
+
+### PRIZES
 
 TBD
 
@@ -73,5 +73,5 @@ TBD
     A programming language can be many things: a runtime, interpreter, compiler, or
     transpiler. Compilers can take decades to write so nobody is expecting the next
     python -- even getting a single contrived program to run is a huge
-    accomplishment. Look in the `/examples` directory for some super simple examples for inspiration.
+    accomplishment. Look in <i>/examples</i> for some super simple examples for inspiration.
 </details>
