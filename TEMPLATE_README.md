@@ -1,7 +1,7 @@
 # <LANGUAGE NAME HERE>
 
 ## AUTHORS
-list of authors here
+list of authors here **and** github handles
 
 ## LANGUAGE SUMMARY (optional)
 summary of language here

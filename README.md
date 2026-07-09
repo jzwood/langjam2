@@ -24,13 +24,18 @@ This year's theme is
 Feel free to interpret the theme as literally or figuratively as you want. Get
 creative and have fun!
 
-- [WHAT COUNTS AS A PL?](./WHAT_COUNTS_AS_A_PL.md)
-
 ### SUBMISSIONS
 
-The following spreadsheet lists all submissions: @TODO
+Fork this repo and create a PR where you add your language to the `/submissions`
+directory. Put your language into a repo named after your language.
 
-To get your lang added to the sheet, fill out this google form: @TODO
+    ├── submissions
+        ├── <pl-name-1>
+        │    ├── README.md
+        │    ├── src
+        ├── <pl-name-2>
+             ├── README.md
+             ├── src
 
 ## RULES
 
@@ -43,8 +48,9 @@ To get your lang added to the sheet, fill out this google form: @TODO
 - You may work in teams
 - PL must adhere to theme
   - include an explanation of how your PL fits the theme in your README.md
-- Your language must not require paying any money or sharing any personal information to compile or use.
-    - examples include 3rd party service, API, or subscription
+- Your language must not require paying any money or sharing any personal
+  information to compile or use.
+  - examples include 3rd party service, API, or subscription
 - Submission must include at least 1 sample program with **clear instructions on
   how to run it**
 
@@ -52,10 +58,24 @@ To get your lang added to the sheet, fill out this google form: @TODO
 
 You may use AI however you like; however, your README.md must include the
 section: `## AI USAGE`, which fully documents how AI was used, or not used, in
-your submission. The final submitted language must not require AI to compiler
-or run. Failure to include heading and disclosure may result in
-disqualification from the jam.
+your submission. The final submitted language must not require AI to compiler or
+run. Failure to include heading and disclosure may result in disqualification
+from the jam.
 
 ### SCHEDULE
 
 TBD
+
+## FAQ
+
+<details>
+  <summary>What counts as a pl?</summary>
+  <quote>
+    A programming language can be many things: a runtime, interpreter, compiler, or
+    transpiler. Compilers can take decades to write so nobody is expecting the next
+    python -- even getting a single contrived program to run is a huge
+    accomplishment.
+
+    Look in the `/examples` directory for some super simple examples for inspiration.
+  </quote>
+</details>
