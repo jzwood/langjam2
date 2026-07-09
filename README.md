@@ -70,12 +70,8 @@ TBD
 
 <details>
   <summary>What counts as a pl?</summary>
-  <quote>
     A programming language can be many things: a runtime, interpreter, compiler, or
     transpiler. Compilers can take decades to write so nobody is expecting the next
     python -- even getting a single contrived program to run is a huge
-    accomplishment.
-
-    Look in the `/examples` directory for some super simple examples for inspiration.
-  </quote>
+    accomplishment. Look in the `/examples` directory for some super simple examples for inspiration.
 </details>
