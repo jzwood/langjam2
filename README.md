@@ -13,7 +13,22 @@ favorite submissions and award one a modest but special prize.
 
 ### THEME
 
-This year's theme will be announced on July 31st, noon EDT!
+<strike>This year's theme will be announced on July 31st, noon EDT!</strike>
+
+This year's jam theme is
+
+<details>
+  <summary><strong>Corecursion</strong></summary>
+  <blockquote>
+  Don't let Wikipedia get you confused -- you're probably already familiar with corecursion without realizing it.
+  Structural recursion is when you consume one layer of a data-structure at a time to build up a result; whereas, corecursion is when you iteratively apply a step function until some condition is met.
+
+  <br/>
+
+  <i>Hint: if you can't figure out how to write a recursive function with reduce/fold, it's probably corecursive!<i>
+</details>
+
+<br>
 
 Feel free to interpret the theme as literally or figuratively as you want. Get
 creative and have fun!
@@ -58,8 +73,7 @@ disqualification from the jam.
 
 ### SCHEDULE
 
-Kickoff on Fri July 31st, ~5pm EDT. Submission deadline Sun Aug 9th (end of
-day).
+Kickoff on Fri July 31st. Submission deadline Sun Aug 9th (end of day).
 
 ## FAQ
 
