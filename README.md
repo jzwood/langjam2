@@ -28,8 +28,6 @@ This year's jam theme is
   <i>Hint: if you can't figure out how to write a recursive function with reduce/fold, it's probably corecursive!<i>
 </details>
 
-<br>
-
 Feel free to interpret the theme as literally or figuratively as you want. Get
 creative and have fun!
 
