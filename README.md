@@ -23,9 +23,11 @@ This year's jam theme is
   Don't let Wikipedia get you confused -- you're probably already familiar with corecursion without realizing it.
   Structural recursion is when you consume one layer of a data-structure at a time to build up a result; whereas, corecursion is when you iteratively apply a step function until some condition is met.
 
-  <br/>
+<br/>
 
-  <i>Hint: if you can't figure out how to write a recursive function with reduce/fold, it's probably corecursive!<i>
+<i>Hint: if you can't figure out how to write a recursive function with
+reduce/fold, it's probably corecursive!<i>
+
 </details>
 
 Feel free to interpret the theme as literally or figuratively as you want. Get
@@ -91,7 +93,7 @@ Kickoff on Fri July 31st. Submission deadline Sun Aug 9th (end of day).
 </details>
 <details>
   <summary>LOC limit</summary>
-  We will be reading source code so we need the submissions to be digestable. Dependencies, configs, and build files do not count towards LOC limit.
+  We will be reading source code so we need the submissions to be digestable. Dependencies, tests, configs, and build files do not count towards LOC limit.
   Please don't put all your code on 1 line or commit project logic into dependencies. We reserve the right to disqualify submissions that violate the spirit of the rules.
 </details>
 <details>
