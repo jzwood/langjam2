@@ -70,17 +70,20 @@ example:
 
 ```
 replace fib(n) with {
-  replace i with n
-  replace result with {
-      iterate <n, i> with {
-      <num * index, index.-(1)>
-    } until {
-      i.=(0)
-    }
+  replace x with [n, n]
+  iterate x with {
+    replace num with seed.0()
+    replace index with seed.1()
+    [num * index, index.-(1)]
+  } until {
+    x.1().=(0)
   }
-  result.0()
 }
 ```
+
+### typechecking
+
+lol no.
 
 ### main
 
@@ -93,17 +96,18 @@ main {
 ### grammar
 
 ```
-ALPHA := a-z
-SPACE := ' '
-ASSIGN_VAR := 'replace' SPACE ALPHA SPACE 'with' EXPR
-ARGS := ALPHA { ',' ALPHA } | ""
-ASSIGN_FUNC := 'replace' SPACE ALPHA '(' ARGS ')' EXPR
+IDENT := a-z { a-z }
+ASSIGN_VAR := 'replace' IDENT 'with' '{' EXPR '}'
+ARGS := IDENT { ',' IDENT } | ""
+ASSIGN_FUNC := 'replace' IDENT '(' ARGS ')' '{' EXPR '}'
+ITERATE := 'iterate' VALUE 'with' '{' EXPR '}' 'until' '{' EXPR '}'
 BIN_OPS := '=' | '+' | '*' | '-' | '/' | 'push' | 'pop' | 'at'
 TERN_OPS := '?'
-CALL := EXPR '.' [ '()' | BIN_OPS '(' EXPR ')' | TERN_OPS '(' EXPR ',' EXPR ')' |  ALPHA '(' EXPRS ')' ]
+CALL := EXPR '.' [ '()' | BIN_OPS '(' EXPR ')' | TERN_OPS '(' EXPR ',' EXPR ')' |  IDENT '(' EXPRS ')' ]
 EXPRS := EXPR { ',' EXPR } | ""
 LIST := '[' EXPRS ']'
-EXPR := NUMBER | LIST | CALL | { ASSIGN_VAR } EXPR
-MAIN := 'main' SPACE EXPR
-PROGRAM := MAIN WHITESPACE { ASSIGN_FUNC }
+VALUE := NUMBER | LIST | IDENT
+EXPR := ASSIGN_VAR EXPR | ITERATE | VALUE | CALL
+MAIN := 'main' '{' EXPR '}'
+PROGRAM := { ASSIGN_FUNC } MAIN
 ```
