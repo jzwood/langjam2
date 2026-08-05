@@ -1,0 +1,10 @@
+# the thue-morse sequence. one symbol different from algae, and the rules are
+# perfectly symmetric: every a becomes ab, every b becomes ba.
+
+strategy parallel
+view flat
+
+a => a : b
+b => b : a
+
+seed a

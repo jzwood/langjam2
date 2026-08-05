@@ -1,0 +1,16 @@
+# the collatz orbit of 27, which climbs to 9232 before it comes down.
+#
+# guards choose the rule. no rule matches a number in two ways, so the program
+# is deterministic without ever saying `if`.
+#
+# the orbit reaches 1 and then cycles 1, 4, 2, 1 forever, so this program is
+# productive in the way kudzu likes: it never runs out of things to say, even
+# after it has run out of things to discover.
+#
+# uncomment the camera to follow the growing edge instead of the whole trail:
+# watch hail(_)
+
+hail(N) when N % 2 == 0 => N : hail(N / 2)
+hail(N) when N % 2 == 1 => N : hail(3 * N + 1)
+
+seed hail(27)
