@@ -1,6 +1,34 @@
 import { assertEquals } from "@std/assert";
-import { binOp, listOf, number, program } from "../src/parse.ts";
+import { binOp, listOf, number, program, ident, expr } from "../src/parse.ts";
 import { CURSOR } from "../src/parser/index.ts";
+
+Deno.test(function exprTest() {
+  assertEquals(
+    listOf(expr())("100, foobar, cat.kitty(baz)", CURSOR),
+    {
+      ok: true,
+      value: {
+        result: [100, "foobar", "cat"],
+        remainder: "",
+        cursor: { row: 0, col: 3, total: 3 },
+      },
+    },
+  );
+});
+
+Deno.test(function identTest() {
+  assertEquals(
+    ident("hello world", CURSOR),
+    {
+      ok: true,
+      value: {
+        result: "hello",
+        remainder: " world",
+        cursor: { row: 0, col: 5, total: 5 },
+      },
+    },
+  );
+});
 
 Deno.test(function listOfTest() {
   assertEquals(
