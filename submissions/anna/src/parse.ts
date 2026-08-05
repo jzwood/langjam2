@@ -1,25 +1,8 @@
-/*
-X IDENT := a-z { a-z }
-X SCOPE := '{' { ASSIGN_VAR } EXPR '}'
-X ASSIGN_VAR := 'replace' IDENT 'with' (SCOPE | EXPR)
-X PARAMS := IDENT { ',' IDENT } | ""
-X ASSIGN_FUNC := 'replace' IDENT '(' PARAMS ')' SCOPE
-  ITERATE := 'iterate' VALUE 'with' SCOPE 'until' SCOPE
-X BIN_OPS := '=' | '+' | '*' | '-' | '/' | 'push' | 'pop' | 'at'
-X TERN_OPS := '?'
-X CALL := EXPR '.' [ BIN_OPS '(' EXPR ')' | TERN_OPS '(' EXPR ',' EXPR ')' |  IDENT '(' EXPRS ')' ]
-  EXPRS := EXPR { ',' EXPR } | ""
-  LIST := '[' EXPRS ']'
-  VALUE := NUMBER | IDENT | LIST
-  EXPR := ITERATE | VALUE | CALL
-  MAIN := 'main' '{' EXPR '}'
-  PROGRAM := { ASSIGN_FUNC } MAIN
-
-*/
-
 import {
   anyWhitespace,
   char,
+  CURSOR,
+  Cursor,
   integer,
   left,
   map,
@@ -40,18 +23,42 @@ import {
   zeroOrMore,
   zeroOrOne,
 } from "./parser/index.ts";
-
-// TODO incorperate SCOPE into types and parsers
+/*
+X IDENT := a-z { a-z }
+X SCOPE := '{' { ASSIGN_VAR } EXPR '}'
+X ASSIGN_VAR := 'replace' IDENT 'with' (SCOPE | EXPR)
+X PARAMS := IDENT { ',' IDENT } | ""
+X ASSIGN_FUNC := 'replace' IDENT '(' PARAMS ')' SCOPE
+  ITERATE := 'iterate' VALUE 'with' SCOPE 'until' SCOPE
+X BIN_OPS := '=' | '+' | '*' | '-' | '/' | 'push' | 'pop' | 'at'
+X TERN_OPS := '?'
+X CALL := EXPR '.' [ BIN_OPS '(' EXPR ')' | TERN_OPS '(' EXPR ',' EXPR ')' |  IDENT '(' EXPRS ')' ]
+X EXPRS := EXPR { ',' EXPR } | ""
+X VALUE := '[' EXPRS '] | NUMBER | IDENT;
+/ EXPR := ITERATE | CALL | VALUE
+  MAIN := 'main' '{' EXPR '}'
+  PROGRAM := { ASSIGN_FUNC } MAIN
+*/
 
 type Var = { ident: string; scope: Scope };
-type Val = number | string; // or Expr[];
-type Scope = { vars: Var[]; expr: Expr }; // or CALL or ITERATE
+type Scope = { vars: Var[]; expr: Expr };
 type Call = { ident: string; args: Expr[] };
-type Expr = Val; // | Call
+type Val = number | string | Expr[];
+type Expr = Call | Val; // or iterate
 type Func = { ident: string; params: string[]; scope: Scope };
 type Program = { funcs: Func[]; main: Expr };
 
-const binOp: Parser<string> = oneOf(
+// HELPERS
+export function listOf<T>(p: Parser<T>, delim: string = ","): Parser<T[]> {
+  return map2(
+    p,
+    zeroOrMore(right(right(char(delim), anyWhitespace), p)),
+    (head, tail) => [head, ...tail],
+  );
+}
+
+// AST PARSERS
+export const binOp: Parser<string> = oneOf(
   char("="),
   char("+"),
   char("*"),
@@ -62,69 +69,79 @@ const binOp: Parser<string> = oneOf(
   word("at"),
 );
 
-const ternOp: Parser<string> = char("?");
+export const ternOp: Parser<string> = char("?");
 
-function listOf<T>(p: Parser<T>, delim: string = ","): Parser<T[]> {
-  return map2(
-    p,
-    oneOrMore(right(right(char(delim), anyWhitespace), p)),
-    (head, tail) => [head, ...tail],
-  );
-}
-
-const isAlpha = (grapheme: string): boolean => (/^[a-zA-Z]$/).test(grapheme);
-const ident: Parser<string> = map(
+export const isAlpha = (grapheme: string): boolean =>
+  (/^[a-zA-Z]$/).test(grapheme);
+export const ident: Parser<string> = map(
   oneOrMore(satisfy(isAlpha)),
   (graphemes) => graphemes.join(""),
 );
-const params: Parser<string[]> = listOf(ident);
+export const params: Parser<string[]> = listOf(ident);
 
-const number: Parser<number> = map2(
+export const number: Parser<number> = map2(
   integer,
   zeroOrOne(right(char("."), integer)),
-  (whole, fractional) => Number(whole + "." + fractional),
+  (whole, fractional) => Number(whole + "." + (fractional || 0)),
 );
 
-const value: Parser<Val> = oneOf<Val>(ident, number); // TODO or Expr[]
+export function value(): Parser<Val> {
+  return oneOf<Val>(wrap("[", exprs(), "]"), number, ident);
+}
 
-// return oneOf(value, list, call)
-const expr: Parser<Expr> = value;
-const exprs: Parser<Expr[]> = oneOf(listOf(expr), pure([]));
+export function expr(): Parser<Expr> {
+  return (input: string, cursor: Cursor = CURSOR) =>
+    oneOf<Expr>(call(), value())(input, cursor); // iterate
+}
+export function exprs(): Parser<Expr[]> {
+  return oneOf(listOf(expr()), pure([]));
+}
 
-function call(): Parser<Call> {
-  return map2(
-    left(expr, char(".")),
-    oneOf(
-      map2(
-        binOp,
-        wrap("(", expr, ")"),
-        (ident, arg) => ({ ident, args: [arg] }),
-      ),
-      map2(
-        ternOp,
-        wrap(
-          "(",
-          map3(trim(expr), char(","), trim(expr), (e1, _, e2) => [e1, e2]),
-          ")",
+export function call(): Parser<Call> {
+  return (input: string, cursor: Cursor = CURSOR) =>
+    map2(
+      left(expr(), char(".")),
+      oneOf(
+        map2(
+          binOp,
+          wrap("(", expr(), ")"),
+          (ident, arg) => ({ ident, args: [arg] }),
         ),
-        (ident, args) => ({ ident, args }),
+        map2(
+          ternOp,
+          wrap(
+            "(",
+            map3(
+              trim(expr()),
+              char(","),
+              trim(expr()),
+              (e1, _, e2) => [e1, e2],
+            ),
+            ")",
+          ),
+          (ident, args) => ({ ident, args }),
+        ),
+        map2(
+          ident,
+          wrap("(", exprs(), ")"),
+          (ident, args) => ({ ident, args }),
+        ),
       ),
-      map2(ident, wrap("(", exprs, ")"), (ident, args) => ({ ident, args })),
-    ),
-    (arg, { ident, args }) => ({ ident, args: [arg, ...args] }),
-  );
+      (arg, { ident, args }) => ({ ident, args: [arg, ...args] }),
+    )(input, cursor);
 }
 
-function assignFunc(): Parser<Func> {
-  return map3(
-    right(right(word("replace"), someWhitespace), ident),
-    wrap("(", trim(params), ")"),
-    trimStart(scope()),
-    (ident, params, scope) => ({ ident, params, scope }),
-  );
+export function assignFunc(): Parser<Func> {
+  return (input: string, cursor: Cursor = CURSOR) =>
+    map3(
+      right(right(word("replace"), someWhitespace), ident),
+      wrap("(", trim(params), ")"),
+      trimStart(scope()),
+      (ident, params, scope) => ({ ident, params, scope }),
+    )(input, cursor);
 }
 
-function assignVar(): Parser<Var> {
+export function assignVar(): Parser<Var> {
   return map2(
     wrap("replace", trim(ident), "with"),
     trimStart(scope()),
@@ -132,16 +149,20 @@ function assignVar(): Parser<Var> {
   );
 }
 
-function scope(): Parser<Scope> {
+export function scope(): Parser<Scope> {
   return wrap(
     "{",
-    map2(zeroOrMore(assignVar()), expr, (vars, expr) => ({ vars, expr })),
+    map2(
+      zeroOrMore(assignVar()),
+      expr(),
+      (vars, expr) => ({ vars, expr }),
+    ),
     "}",
   );
 }
 
-const program: Parser<Program> = map2(
+export const program: Parser<Program> = map2(
   zeroOrMore(left(assignFunc(), someWhitespace)),
-  right(trimEnd(word("main")), wrap("{", expr, "}")),
+  right(trimEnd(word("main")), wrap("{", expr(), "}")),
   (funcs, main) => ({ funcs, main }),
 );

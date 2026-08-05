@@ -1,3 +1,4 @@
 #!/bin/sh
 
 deno fmt src
+deno fmt test
