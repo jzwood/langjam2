@@ -1,16 +1,57 @@
 import { assertEquals } from "@std/assert";
-import { binOp, listOf, number, program, ident, expr } from "../src/parse.ts";
+import {
+  binOp,
+  call,
+  expr,
+  ident,
+  listOf,
+  number,
+  program,
+} from "../src/parse.ts";
 import { CURSOR } from "../src/parser/index.ts";
 
 Deno.test(function exprTest() {
   assertEquals(
-    listOf(expr())("100, foobar, cat.kitty(baz)", CURSOR),
+    call()("34.+(12)", CURSOR),
     {
       ok: true,
       value: {
-        result: [100, "foobar", "cat"],
+        result: { ident: "+", args: [34, 12] },
         remainder: "",
-        cursor: { row: 0, col: 3, total: 3 },
+        cursor: { row: 0, col: 8, total: 8 },
+      },
+    },
+  );
+  assertEquals(
+    call()("foo.=(bar)", CURSOR),
+    {
+      ok: true,
+      value: {
+        result: { ident: "=", args: ["foo", "bar"] },
+        remainder: "",
+        cursor: { row: 0, col: 10, total: 10 },
+      },
+    },
+  );
+  assertEquals(
+    call()("1.?(0, 2)", CURSOR),
+    {
+      ok: true,
+      value: {
+        result: { ident: "?", args: [1, 0, 2] },
+        remainder: "",
+        cursor: { row: 0, col: 9, total: 9 },
+      },
+    },
+  );
+  assertEquals(
+    call()("a.sum(b, c, d)", CURSOR),
+    {
+      ok: true,
+      value: {
+        result: { ident: "sum", args: ["a", "b", "c", "d"] },
+        remainder: "",
+        cursor: { row: 0, col: 14, total: 14 },
       },
     },
   );
