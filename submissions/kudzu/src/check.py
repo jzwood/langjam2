@@ -90,7 +90,7 @@ def check(program):
     looping = cycles_from(graph, start)
 
     if not looping: warnings.append("this program halts: no cycle is reachable from the seed.")
-    if all(growth.get(h, 0) <= 0 for h in looping):
+    elif all(growth.get(h, 0) <= 0 for h in looping):
         warnings.append(
             "nothing on the cycle %s grows: this program will not produce "
             "anything." % ", ".join(sorted(looping)))
