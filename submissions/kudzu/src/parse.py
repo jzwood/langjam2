@@ -63,6 +63,9 @@ class Parser(object):
     def done(self):
         return self.pos >= len(self.toks)
 
+    def end(self, what):
+        if not self.done(): self.fail("trailing input after %s" % what)
+
     def fail(self, msg):
         raise KudzuError("line %d: %s" % (self.lineno, msg))
 
@@ -138,9 +141,16 @@ def parse_rule(p):
         guard = p.expr()
     p.expect("=>")
     rhs = p.expr()
-    if not p.done(): p.fail("trailing input after rule")
+    p.end("rule")
     check_rule(lhs, guard, rhs, p)
     return Rule(lhs, guard, rhs, "source", p.lineno)
+
+
+def holes(t):
+    if isinstance(t, Var): return t.name == "_"
+    if not isinstance(t, App): return False
+    if t.head == "=>" and len(t.args) == 3: return holes(t.args[1]) or holes(t.args[2])
+    return any(holes(a) for a in t.args)
 
 
 def free_vars(t):
@@ -162,6 +172,8 @@ def check_rule(lhs, guard, rhs, p):
     bound = variables(lhs)
     for name in sorted(free_vars(rhs) | free_vars(guard or TRUE)):
         if name not in bound: p.fail("%s is not bound by the left-hand side" % name)
+    if holes(rhs) or holes(guard or TRUE):
+        p.fail("_ binds nothing, so it cannot be used on the right")
 
 
 def parse(src):
@@ -175,18 +187,22 @@ def parse(src):
             p.next()
             _, strategy = p.next()
             if strategy not in ("outermost", "parallel"): p.fail("unknown strategy %r" % strategy)
+            p.end("strategy")
         elif p.at("view"):
             p.next()
             _, view = p.next()
             if view not in ("tree", "flat"): p.fail("unknown view %r" % view)
+            p.end("view")
         elif p.at("watch"):
             p.next()
             watch = p.expr()
+            p.end("watch")
         elif p.at("seed"):
             p.next()
             seed = p.expr()
-            if not p.done(): p.fail("trailing input after seed")
+            p.end("seed")
         else:
+            if p.at("learn"): p.fail("learn is a reserved word and cannot be the head of a rule")
             rules.append(parse_rule(p))
     if seed is None: raise KudzuError("no seed: nothing to grow")
     return Program(rules, seed, strategy, view, watch)
