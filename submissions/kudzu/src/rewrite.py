@@ -1,6 +1,6 @@
 """thing go brrrr"""
 from .term import (FALSE, TRUE, App, Int, KudzuError, Rule, Var, exceeds,
-                   show)
+                   show, variables)
 
 ARITH = {
     "+": lambda a, b: a + b,
@@ -40,6 +40,11 @@ def match(pat, t, b):
 
 def subst(t, b):
     if isinstance(t, Var): return b.get(t.name, t)
+    if isinstance(t, App) and t.head == "=>" and len(t.args) == 3:
+        lhs, guard, rhs = t.args
+        own = variables(lhs)
+        inner = {k: v for k, v in b.items() if k not in own}
+        return App(t.head, [lhs, subst(guard, inner), subst(rhs, inner)])
     if isinstance(t, App) and t.args: return App(t.head, [subst(a, b) for a in t.args])
     return t
 
@@ -105,14 +110,21 @@ class Machine(object):
         self.term = fold(program.seed)
         self.frame = 0
         self.learned = 0
+        self.known = set()
         self.by_head = {}
         self.overgrown = False
 
     def install(self, literal):
         lhs, guard, rhs = literal.args
-        self.rules.insert(0, Rule(lhs, None if guard == TRUE else guard, rhs,
-                                  "learned"))
-        self.learned += 1
+        guard = None if guard == TRUE else guard
+        key = (lhs, guard, rhs)
+        if key in self.known:
+            self.rules = [r for r in self.rules if r.origin != "learned"
+                          or (r.lhs, r.guard, r.rhs) != key]
+        else:
+            self.known.add(key)
+            self.learned += 1
+        self.rules.insert(0, Rule(lhs, guard, rhs, "learned"))
         self.by_head = {}
 
     def applicable(self, t):
