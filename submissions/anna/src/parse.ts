@@ -91,16 +91,17 @@ export function value(): Parser<Val> {
 
 export function expr(): Parser<Expr> {
   return (input: string, cursor: Cursor = CURSOR) =>
-    oneOf<Expr>(value(), call())(input, cursor); // iterate
+    oneOf<Expr>(call(value()), value(), call(expr()))(input, cursor); // iterate
 }
+
 export function exprs(): Parser<Expr[]> {
   return oneOf(listOf(expr()), pure([]));
 }
 
-export function call(): Parser<Call> {
+export function call(p: Parser<Expr>): Parser<Call> {
   return (input: string, cursor: Cursor = CURSOR) =>
     map2(
-      left(expr(), char(".")),
+      left(p, char(".")),
       oneOf(
         map2(
           binOp,

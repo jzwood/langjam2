@@ -12,7 +12,7 @@ import { CURSOR } from "../src/parser/index.ts";
 
 Deno.test(function exprTest() {
   assertEquals(
-    call()("34.+(12)", CURSOR),
+    expr()("34.+(12)", CURSOR),
     {
       ok: true,
       value: {
@@ -23,7 +23,7 @@ Deno.test(function exprTest() {
     },
   );
   assertEquals(
-    call()("foo.=(bar)", CURSOR),
+    expr()("foo.=(bar)", CURSOR),
     {
       ok: true,
       value: {
@@ -34,7 +34,7 @@ Deno.test(function exprTest() {
     },
   );
   assertEquals(
-    call()("1.?(0, 2)", CURSOR),
+    expr()("1.?(0, 2)", CURSOR),
     {
       ok: true,
       value: {
@@ -45,13 +45,24 @@ Deno.test(function exprTest() {
     },
   );
   assertEquals(
-    call()("a.sum(b, c, d)", CURSOR),
+    expr()("a.sum(b, c, d)", CURSOR),
     {
       ok: true,
       value: {
         result: { ident: "sum", args: ["a", "b", "c", "d"] },
         remainder: "",
         cursor: { row: 0, col: 14, total: 14 },
+      },
+    },
+  );
+  assertEquals(
+    expr()("1.+(2.*(3))", CURSOR),
+    {
+      ok: true,
+      value: {
+        result: { ident: "+", args: [1, { ident: "*", args: [2, 3] }] },
+        remainder: "",
+        cursor: { row: 0, col: 11, total: 11 },
       },
     },
   );

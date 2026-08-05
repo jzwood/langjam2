@@ -34,6 +34,16 @@ export function satisfy(
   };
 }
 
+// peek is special in that it does not consume any input
+export function peek(): Parser<Grapheme> {
+  return (input: string, cursor: Cursor = CURSOR) => {
+    const result = input.at(0);
+    return result != null
+      ? Result.ok({ result, cursor, remainder: input })
+      : Result.err(cursor);
+  };
+}
+
 export function map<A, B>(pa: Parser<A>, fn: (result: A) => B): Parser<B> {
   return (input: string, cursor: Cursor = CURSOR) =>
     Result.map(pa(input, cursor), (ok: ParseOk<A>): ParseOk<B> => ({
