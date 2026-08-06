@@ -1,0 +1,16 @@
+# the sieve of eratosthenes, written as a program that learns.
+#
+# every number is born as a candidate. a candidate is tried against the rules
+# the program has learned so far; if one of them recognises it, it dies. if
+# none of them do, then nothing known divides it, so it is prime -- and it
+# teaches the program a new rule about its own multiples before becoming
+# itself.
+#
+# nothing here counts, tests or divides on purpose. the rulebook does the
+# work, and it gets longer as the program runs.
+
+nats(N)   => test(N) : nats(N + 1)
+test(K)   => learn(test(J) when J % K == 0 => dead, K)
+dead : Xs => Xs
+
+seed nats(2)

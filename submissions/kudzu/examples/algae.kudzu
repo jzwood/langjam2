@@ -1,0 +1,17 @@
+# lindenmayer's original algae model, 1968.
+#
+# `strategy parallel` rewrites every outermost redex at once and does not
+# descend into what it just produced, which is exactly what an l-system means
+# by a generation.
+#
+# rewriting one symbol into two nests the spine of the sequence, so the term is
+# a tree even though what it stands for is a row of symbols. `view flat` reads
+# off the leaves in order instead of pretending the tree is not there.
+
+strategy parallel
+view flat
+
+a => a : b
+b => a
+
+seed a
