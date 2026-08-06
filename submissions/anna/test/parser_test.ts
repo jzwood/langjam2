@@ -6,7 +6,7 @@ import {
   binOp,
   expr,
   ident,
-  listOf,
+  nonEmptyList,
   number,
   program,
   scope,
@@ -22,6 +22,49 @@ function resultIs<T>(actual: ParseResult<T>, expected: T) {
   }
 }
 
+Deno.test(function programTest() {
+  resultIs(
+    program(
+      `replace double(a) with {
+        a.*(2)
+      }
+
+        main {
+          replace y with 8.8.=(4.4.double())
+          y
+        }
+        `,
+      CURSOR,
+    ),
+    {
+      funcs: [{
+        ident: "double",
+        params: ["a"],
+        scope: { vars: [], expr: { ident: "*", args: ["a", 2] } },
+      }],
+      main: {
+        vars: [
+          {
+            expr: {
+              args: [
+                8.8,
+                {
+                  args: [
+                    4.4,
+                  ],
+                  ident: "double",
+                },
+              ],
+              ident: "=",
+            },
+            ident: "y",
+          },
+        ],
+        expr: "y",
+      },
+    },
+  );
+});
 
 Deno.test(function assignFuncTest() {
   resultIs(
@@ -132,8 +175,8 @@ Deno.test(function identTest() {
   );
 });
 
-Deno.test(function listOfTest() {
-  resultIs(listOf(binOp)("=, +, *, -, /, push, pop, at", CURSOR), [
+Deno.test(function nonEmptyListTest() {
+  resultIs(nonEmptyList(binOp)("=, +, *, -, /, push, pop, at", CURSOR), [
     "=",
     "+",
     "*",

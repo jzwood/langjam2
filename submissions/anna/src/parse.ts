@@ -49,12 +49,19 @@ type Func = { ident: string; params: string[]; scope: Scope };
 type Program = { funcs: Func[]; main: Scope };
 
 // HELPERS
-export function listOf<T>(p: Parser<T>, delim: string = ","): Parser<T[]> {
+export function nonEmptyList<T>(
+  p: Parser<T>,
+  delim: string = ",",
+): Parser<T[]> {
   return map2(
     p,
     zeroOrMore(right(right(char(delim), anyWhitespace), p)),
     (head, tail) => [head, ...tail],
   );
+}
+
+export function list<T>(p: Parser<T>, delim: string = ","): Parser<T[]> {
+  return map(zeroOrOne(nonEmptyList(p, delim)), (rs) => rs == null ? [] : rs);
 }
 
 // AST PARSERS
@@ -77,7 +84,7 @@ export const ident: Parser<string> = map(
   oneOrMore(satisfy(isAlpha)),
   (graphemes) => graphemes.join(""),
 );
-export const params: Parser<string[]> = listOf(ident);
+export const params: Parser<string[]> = trim(nonEmptyList(ident));
 
 export const number: Parser<number> = map2(
   integer,
@@ -95,7 +102,7 @@ export function expr(): Parser<Expr> {
 }
 
 export function exprs(): Parser<Expr[]> {
-  return oneOf(listOf(expr()), pure([]));
+  return trim(list(expr()));
 }
 
 export function call(p: Parser<Expr>): Parser<Call> {
@@ -124,7 +131,7 @@ export function call(p: Parser<Expr>): Parser<Call> {
         ),
         map2(
           ident,
-          wrap("(", exprs(), ")"),
+          oneOf(map(word("()"), () => []), wrap("(", exprs(), ")")),
           (ident, args) => ({ ident, args }),
         ),
       ),
@@ -136,7 +143,7 @@ export function assignFunc(): Parser<Func> {
   return (input: string, cursor: Cursor = CURSOR) =>
     map3(
       right(right(word("replace"), someWhitespace), ident),
-      left(wrap("(", trim(params), ")"), trim(word("with"))),
+      left(wrap("(", params, ")"), trim(word("with"))),
       scope(),
       (ident, params, scope) => ({ ident, params, scope }),
     )(input, cursor);
