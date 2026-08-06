@@ -26,7 +26,7 @@ import {
 /*
 X IDENT := a-z { a-z }
 X SCOPE := '{' { ASSIGN_VAR } EXPR '}'
-X ASSIGN_VAR := 'replace' IDENT 'with' (SCOPE | EXPR)
+X ASSIGN_VAR := 'replace' IDENT 'with' EXPR
 X PARAMS := IDENT { ',' IDENT } | ""
 X ASSIGN_FUNC := 'replace' IDENT '(' PARAMS ')' SCOPE
   ITERATE := 'iterate' VALUE 'with' SCOPE 'until' SCOPE
@@ -40,7 +40,7 @@ X VALUE := '[' EXPRS '] | NUMBER | IDENT;
   PROGRAM := { ASSIGN_FUNC } MAIN
 */
 
-type Var = { ident: string; scope: Scope };
+type Var = { ident: string; expr: Expr };
 type Scope = { vars: Var[]; expr: Expr };
 type Call = { ident: string; args: Expr[] };
 type Val = number | string | Expr[];
@@ -145,8 +145,8 @@ export function assignFunc(): Parser<Func> {
 export function assignVar(): Parser<Var> {
   return map2(
     wrap("replace", trim(ident), "with"),
-    trimStart(scope()),
-    (ident, scope) => ({ ident, scope }),
+    trimStart(expr()),
+    (ident, expr) => ({ ident, expr }),
   );
 }
 

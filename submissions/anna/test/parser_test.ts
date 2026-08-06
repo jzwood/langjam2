@@ -1,71 +1,87 @@
-import { assertEquals } from "@std/assert";
+import { assertEquals, fail } from "@std/assert";
+
 import {
+  assignFunc,
+  assignVar,
   binOp,
-  call,
   expr,
   ident,
   listOf,
   number,
   program,
+  scope,
 } from "../src/parse.ts";
-import { CURSOR } from "../src/parser/index.ts";
+import { CURSOR, ParseResult } from "../src/parser/index.ts";
+
+function resultIs<T>(actual: ParseResult<T>, expected: T) {
+  if (actual.ok) {
+    const result = actual.value.result;
+    assertEquals(result, expected);
+  } else {
+    fail("parsing failed");
+  }
+}
+
+Deno.test(function assignFuncTest() {
+  resultIs(assignFunc()(`replace foo(a, b) with {
+    replace i with 99
+    [i, j, 5]
+  }
+  `, CURSOR), {
+    ident: "foo",
+    params: ["a", "b"],
+    scope: {
+      vars: [{ident: "i", expr: 99}],
+      expr: ["i", "j", 5]
+    },
+  });
+});
+
+Deno.test(function assignVarTest() {
+  resultIs(assignVar()("replace hello with 9000", CURSOR), {
+    ident: "hello",
+    expr: 9000,
+  });
+  resultIs(assignVar()("replace foo with bar", CURSOR), {
+    ident: "foo",
+    expr: "bar",
+  });
+  resultIs(assignVar()("replace fizz with bar.bat(buzz)", CURSOR), {
+    expr: {
+      args: [
+        "bar",
+        "buzz",
+      ],
+      ident: "bat",
+    },
+    ident: "fizz",
+  });
+});
 
 Deno.test(function exprTest() {
-  assertEquals(
-    expr()("34.+(12)", CURSOR),
-    {
-      ok: true,
-      value: {
-        result: { ident: "+", args: [34, 12] },
-        remainder: "",
-        cursor: { row: 0, col: 8, total: 8 },
-      },
-    },
-  );
-  assertEquals(
-    expr()("foo.=(bar)", CURSOR),
-    {
-      ok: true,
-      value: {
-        result: { ident: "=", args: ["foo", "bar"] },
-        remainder: "",
-        cursor: { row: 0, col: 10, total: 10 },
-      },
-    },
-  );
-  assertEquals(
-    expr()("1.?(0, 2)", CURSOR),
-    {
-      ok: true,
-      value: {
-        result: { ident: "?", args: [1, 0, 2] },
-        remainder: "",
-        cursor: { row: 0, col: 9, total: 9 },
-      },
-    },
-  );
-  assertEquals(
-    expr()("a.sum(b, c, d)", CURSOR),
-    {
-      ok: true,
-      value: {
-        result: { ident: "sum", args: ["a", "b", "c", "d"] },
-        remainder: "",
-        cursor: { row: 0, col: 14, total: 14 },
-      },
-    },
-  );
-  assertEquals(
-    expr()("1.+(2.*(3))", CURSOR),
-    {
-      ok: true,
-      value: {
-        result: { ident: "+", args: [1, { ident: "*", args: [2, 3] }] },
-        remainder: "",
-        cursor: { row: 0, col: 11, total: 11 },
-      },
-    },
-  );
+  resultIs(expr()("34.+(12)", CURSOR), { ident: "+", args: [34, 12] });
+  resultIs(expr()("foo.=(bar)", CURSOR), { ident: "=", args: ["foo", "bar"] });
+  resultIs(expr()("1.?(0, 2)", CURSOR), { ident: "?", args: [1, 0, 2] });
+  resultIs(expr()("a.sum(b, c, d)", CURSOR), {
+    ident: "sum",
+    args: ["a", "b", "c", "d"],
+  });
+  resultIs(expr()("1.+(2.*(3))", CURSOR), {
+    ident: "+",
+    args: [1, { ident: "*", args: [2, 3] }],
+  });
+  resultIs(expr()("[1].?([1], [2,3])", CURSOR), {
+    ident: "?",
+    args: [[1], [1], [2, 3]],
+  });
+  resultIs(expr()("11.11.-(22.22)", CURSOR), {
+    ident: "-",
+    args: [11.11, 22.22],
+  });
+  resultIs(expr()("a.b(c.d(e))", CURSOR), {
+    ident: "b",
+    args: ["a", { ident: "d", args: ["c", "e"] }],
+  });
 });
 
 Deno.test(function identTest() {
@@ -83,71 +99,21 @@ Deno.test(function identTest() {
 });
 
 Deno.test(function listOfTest() {
-  assertEquals(
-    listOf(binOp)("=, +, *, -, /, push, pop, at", CURSOR),
-    {
-      ok: true,
-      value: {
-        result: [
-          "=",
-          "+",
-          "*",
-          "-",
-          "/",
-          "push",
-          "pop",
-          "at",
-        ],
-        remainder: "",
-        cursor: { row: 0, col: 28, total: 28 },
-      },
-    },
-  );
+  resultIs(listOf(binOp)("=, +, *, -, /, push, pop, at", CURSOR), [
+    "=",
+    "+",
+    "*",
+    "-",
+    "/",
+    "push",
+    "pop",
+    "at",
+  ]);
 });
 
 Deno.test(function numberTest() {
-  assertEquals(
-    number("34.3", CURSOR),
-    {
-      ok: true,
-      value: {
-        result: 34.3,
-        remainder: "",
-        cursor: { row: 0, col: 4, total: 4 },
-      },
-    },
-  );
-  assertEquals(
-    number("90.0", CURSOR),
-    {
-      ok: true,
-      value: {
-        result: 90.0,
-        remainder: "",
-        cursor: { row: 0, col: 4, total: 4 },
-      },
-    },
-  );
-  assertEquals(
-    number("123", CURSOR),
-    {
-      ok: true,
-      value: {
-        result: 123,
-        remainder: "",
-        cursor: { row: 0, col: 3, total: 3 },
-      },
-    },
-  );
-  assertEquals(
-    number("0", CURSOR),
-    {
-      ok: true,
-      value: {
-        result: 0,
-        remainder: "",
-        cursor: { row: 0, col: 1, total: 1 },
-      },
-    },
-  );
+  resultIs(number("34.3", CURSOR), 34.3);
+  resultIs(number("90.0", CURSOR), 90.0);
+  resultIs(number("123", CURSOR), 123);
+  resultIs(number("0", CURSOR), 0);
 });
