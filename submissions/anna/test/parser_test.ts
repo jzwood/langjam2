@@ -22,19 +22,53 @@ function resultIs<T>(actual: ParseResult<T>, expected: T) {
   }
 }
 
+
 Deno.test(function assignFuncTest() {
-  resultIs(assignFunc()(`replace foo(a, b) with {
-    replace i with 99
-    [i, j, 5]
-  }
-  `, CURSOR), {
-    ident: "foo",
-    params: ["a", "b"],
-    scope: {
-      vars: [{ident: "i", expr: 99}],
-      expr: ["i", "j", 5]
+  resultIs(
+    assignFunc()(
+      `replace foo(a, b) with {
+        replace i with 99
+
+        [i, j, 5]
+      }`,
+      CURSOR,
+    ),
+    {
+      ident: "foo",
+      params: ["a", "b"],
+      scope: {
+        vars: [{ ident: "i", expr: 99 }],
+        expr: ["i", "j", 5],
+      },
     },
+  );
+});
+
+Deno.test(function scopeTest() {
+  resultIs(scope()("{ replace i with 99 [i, j, 5] }", CURSOR), {
+    vars: [{ ident: "i", expr: 99 }],
+    expr: ["i", "j", 5],
   });
+  resultIs(
+    scope()(
+      `{
+      replace a with b
+      replace x with 0
+      45.?(a, [x])
+    }`,
+      CURSOR,
+    ),
+    {
+      vars: [
+        { ident: "a", expr: "b" },
+        { ident: "x", expr: 0 },
+      ],
+      expr: {
+        ident: "?",
+        args: [45, "a", ["x"]],
+      },
+    },
+  );
 });
 
 Deno.test(function assignVarTest() {

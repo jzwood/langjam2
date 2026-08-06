@@ -26,8 +26,12 @@ export const integer: Parser<number> = P.map(
   (xs) => parseInt(xs.join(""), 10),
 );
 
-export const someWhitespace = P.oneOrMore(P.satisfy(isWhitespace));
-export const anyWhitespace = P.zeroOrMore(P.satisfy(isWhitespace));
+export const someWhitespace: Parser<string[]> = P.oneOrMore(
+  P.satisfy(isWhitespace),
+);
+export const anyWhitespace: Parser<string[]> = P.zeroOrMore(
+  P.satisfy(isWhitespace),
+);
 
 export function isAlpha(grapheme: P.Grapheme): boolean {
   return (/^[a-zA-Z]$/).test(grapheme);

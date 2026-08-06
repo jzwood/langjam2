@@ -46,7 +46,7 @@ type Call = { ident: string; args: Expr[] };
 type Val = number | string | Expr[];
 type Expr = Call | Val; // or iterate
 type Func = { ident: string; params: string[]; scope: Scope };
-type Program = { funcs: Func[]; main: Expr };
+type Program = { funcs: Func[]; main: Scope };
 
 // HELPERS
 export function listOf<T>(p: Parser<T>, delim: string = ","): Parser<T[]> {
@@ -136,8 +136,8 @@ export function assignFunc(): Parser<Func> {
   return (input: string, cursor: Cursor = CURSOR) =>
     map3(
       right(right(word("replace"), someWhitespace), ident),
-      wrap("(", trim(params), ")"),
-      trimStart(scope()),
+      left(wrap("(", trim(params), ")"), trim(word("with"))),
+      scope(),
       (ident, params, scope) => ({ ident, params, scope }),
     )(input, cursor);
 }
@@ -153,17 +153,17 @@ export function assignVar(): Parser<Var> {
 export function scope(): Parser<Scope> {
   return wrap(
     "{",
-    map2(
-      zeroOrMore(assignVar()),
-      expr(),
+    trim(map2(
+      zeroOrMore(trimStart(assignVar())),
+      trim(expr()),
       (vars, expr) => ({ vars, expr }),
-    ),
+    )),
     "}",
   );
 }
 
 export const program: Parser<Program> = map2(
   zeroOrMore(left(assignFunc(), someWhitespace)),
-  right(trimEnd(word("main")), wrap("{", expr(), "}")),
+  right(trimEnd(word("main")), scope()),
   (funcs, main) => ({ funcs, main }),
 );
