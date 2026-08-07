@@ -11,7 +11,6 @@ import {
   oneOf,
   oneOrMore,
   Parser,
-  pure,
   right,
   satisfy,
   someWhitespace,
@@ -23,22 +22,6 @@ import {
   zeroOrMore,
   zeroOrOne,
 } from "./parser/index.ts";
-/*
-X IDENT := a-z { a-z }
-X SCOPE := '{' { ASSIGN_VAR } EXPR '}'
-X ASSIGN_VAR := 'replace' IDENT 'with' EXPR
-X PARAMS := IDENT { ',' IDENT } | ""
-X ASSIGN_FUNC := 'replace' IDENT '(' PARAMS ')' SCOPE
-  ITERATE := 'iterate' VALUE 'with' SCOPE 'until' SCOPE
-X BIN_OPS := '=' | '+' | '*' | '-' | '/' | 'push' | 'pop' | 'at'
-X TERN_OPS := '?'
-X CALL := EXPR '.' [ BIN_OPS '(' EXPR ')' | TERN_OPS '(' EXPR ',' EXPR ')' |  IDENT '(' EXPRS ')' ]
-X EXPRS := EXPR { ',' EXPR } | ""
-X VALUE := '[' EXPRS '] | NUMBER | IDENT;
-/ EXPR := ITERATE | CALL | VALUE
-  MAIN := 'main' '{' EXPR '}'
-  PROGRAM := { ASSIGN_FUNC } MAIN
-*/
 
 type Var = { ident: string; expr: Expr };
 type Scope = { vars: Var[]; expr: Expr };
@@ -67,16 +50,22 @@ export function list<T>(p: Parser<T>, delim: string = ","): Parser<T[]> {
 // AST PARSERS
 export const binOp: Parser<string> = oneOf(
   char("="),
+  char(">"),
+  char("<"),
+  char("|"),
+  char("&"),
   char("+"),
   char("*"),
   char("-"),
   char("/"),
+  char("%"),
+  char("@"),
   word("push"),
   word("pop"),
-  word("at"),
+  word("iterate"),
 );
 
-export const ternOp: Parser<string> = char("?");
+export const ternOp: Parser<string> = oneOf(char("?"), word("fold"));
 
 export const isAlpha = (grapheme: string): boolean =>
   (/^[a-zA-Z]$/).test(grapheme);

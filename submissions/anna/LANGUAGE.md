@@ -3,7 +3,7 @@
 ### function definitions
 
 ```
-replace fib(a, b, c) with {
+replace foobar(a, b, c) with {
 ...
 }
 ```
@@ -16,36 +16,21 @@ replace fib(a, b, c) with {
 ### variable definition
 
 ```
-replace value with {
-...
-}
+replace value with <expression>
 ```
 
 ### types
 
 - floats: `0.33`
-- bools: `T | F` -- stretch goal
-- 2-tuple: `<_,_>` -- stretch goal
 - lists: `[_, _, ...]`
+- streams
 
-### built-ins
+### built-in operators
 
 floats:
 
 ```
 +, -, *, /, >, >=, =, /=
-```
-
-bools:
-
-```
-and, or, not, =
-```
-
-tuples:
-
-```
-0, 1, =
 ```
 
 lists:
@@ -54,30 +39,38 @@ lists:
 push, pop, at, =
 ```
 
-### looping
-
-- no loops, no direct recursion, you only get iterate
+streams:
 
 ```
-iterate value with {
-...
-} until {
-...
-}
+drop, take, while
+```
+
+### looping
+
+- use `iterate` to create a stream
+
+```
+iterate <value> with <function_name | function_definition>
 ```
 
 example:
 
 ```
+replace incr(x) with { x.+(1) }
+replace factorial(n) with {
+  1.iterate(incr).take(n).fold(*, 1)
+}
+
+replace nextfib(list) with {
+  replace fst with list.@(0)
+  replace snd with list.@(1)
+  [snd, fst.+(snd)]
+}
+replace fibalg(acc, pair) with {
+  acc.push(pair.a(2))
+}
 replace fib(n) with {
-  replace x with [n, n]
-  iterate x with {
-    replace num with seed.0()
-    replace index with seed.1()
-    [num * index, index.-(1)]
-  } until {
-    x.1().=(0)
-  }
+  [1, 1].iterate(nextfib).fold(fibalg, [])
 }
 ```
 
@@ -97,17 +90,16 @@ main {
 
 ```
 IDENT := a-z { a-z }
-ASSIGN_VAR := 'replace' IDENT 'with' '{' EXPR '}'
-ARGS := IDENT { ',' IDENT } | ""
-ASSIGN_FUNC := 'replace' IDENT '(' ARGS ')' '{' EXPR '}'
-ITERATE := 'iterate' VALUE 'with' '{' EXPR '}' 'until' '{' EXPR '}'
-BIN_OPS := '=' | '+' | '*' | '-' | '/' | 'push' | 'pop' | 'at'
-TERN_OPS := '?'
-CALL := EXPR '.' [ '()' | BIN_OPS '(' EXPR ')' | TERN_OPS '(' EXPR ',' EXPR ')' |  IDENT '(' EXPRS ')' ]
+SCOPE := '{' { ASSIGN_VAR } EXPR '}'
+ASSIGN_VAR := 'replace' IDENT 'with' EXPR
+PARAMS := IDENT { ',' IDENT } | ""
+ASSIGN_FUNC := 'replace' IDENT '(' PARAMS ')' SCOPE
+BIN_OPS := '=' | '>' | '<' | '|' | '&' | '+' | '*' | '-' | '/' | '%' | 'push' | 'pop' | 'iterate' | '@'
+TERN_OPS := '?' | 'fold'
+CALL := EXPR '.' [ BIN_OPS '(' EXPR ')' | TERN_OPS '(' EXPR ',' EXPR ')' |  IDENT '(' EXPRS ')' ]
 EXPRS := EXPR { ',' EXPR } | ""
-LIST := '[' EXPRS ']'
-VALUE := NUMBER | LIST | IDENT
-EXPR := ASSIGN_VAR EXPR | ITERATE | VALUE | CALL
-MAIN := 'main' '{' EXPR '}'
+VALUE := '[' EXPRS '] | NUMBER | IDENT;
+EXPR := CALL | VALUE
+MAIN := 'main' SCOPE
 PROGRAM := { ASSIGN_FUNC } MAIN
 ```

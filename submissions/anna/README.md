@@ -20,8 +20,9 @@ or `negate(value) { }`: `6.negate()`. there are no 0-arity functions.
 
 There are no looping constructs and direct recursion will fail to evaluate.
 
-Intead you have 1 corecursion primitive, `iterate` which iteratively applies a
-step function until `until` condition is met.
+Intead you have
+- 1 corecursion operator, `iterate`, which produces a stream by iteratively applying a step function.
+- 1 structural recursion operator, `fold`, which acts on lists and streams.
 
 ## HOW TO USE
 
@@ -31,4 +32,4 @@ Look over the language guide in `LANGUAGE.md` or examples in `examples/`.
 
 ## AI USAGE
 
-No AI used
+Used AI to demystify occasional typescript errors.
