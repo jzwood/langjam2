@@ -139,7 +139,10 @@ Deno.test(function exprTest() {
   resultIs(expr()("34.+(12)", CURSOR), { ident: "+", args: [34, 12] });
   resultIs(expr()("foo.=(bar)", CURSOR), { ident: "=", args: ["foo", "bar"] });
   resultIs(expr()("1.?(0, 2)", CURSOR), { ident: "?", args: [1, 0, 2] });
-  resultIs(expr()("[1,2,3].@(2)", CURSOR), { ident: "@", args: [[1, 2, 3], 2] });
+  resultIs(expr()("[1,2,3].@(2)", CURSOR), {
+    ident: "@",
+    args: [[1, 2, 3], 2],
+  });
   resultIs(expr()("a.sum(b, c, d)", CURSOR), {
     ident: "sum",
     args: ["a", "b", "c", "d"],
@@ -186,7 +189,7 @@ Deno.test(function nonEmptyListTest() {
     "push",
     "pop",
     "@",
-    "%"
+    "%",
   ]);
 });
 

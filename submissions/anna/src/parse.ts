@@ -11,6 +11,7 @@ import {
   oneOf,
   oneOrMore,
   Parser,
+  ParseResult,
   right,
   satisfy,
   someWhitespace,
@@ -23,13 +24,13 @@ import {
   zeroOrOne,
 } from "./parser/index.ts";
 
-type Var = { ident: string; expr: Expr };
-type Scope = { vars: Var[]; expr: Expr };
-type Call = { ident: string; args: Expr[] };
-type Val = number | string | Expr[];
-type Expr = Call | Val; // or iterate
-type Func = { ident: string; params: string[]; scope: Scope };
-type Program = { funcs: Func[]; main: Scope };
+export type Var = { ident: string; expr: Expr };
+export type Scope = { vars: Var[]; expr: Expr };
+export type Call = { ident: string; args: Expr[] };
+export type Val = number | string | Expr[];
+export type Expr = Call | Val;
+export type Func = { ident: string; params: string[]; scope: Scope };
+export type Program = { funcs: Func[]; main: Scope };
 
 // HELPERS
 export function nonEmptyList<T>(
@@ -158,8 +159,11 @@ export function scope(): Parser<Scope> {
   );
 }
 
-export const program: Parser<Program> = map2(
+export const program: Parser<Program> = trim(map2(
   zeroOrMore(left(assignFunc(), someWhitespace)),
   right(trimEnd(word("main")), scope()),
   (funcs, main) => ({ funcs, main }),
-);
+));
+
+export const compile = (input: string): ParseResult<Program> =>
+  program(input, CURSOR);
