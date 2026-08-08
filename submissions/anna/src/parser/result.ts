@@ -23,3 +23,11 @@ export function bind<E, A, B>(
 ): Result<E, B> {
   return result.ok ? fn(result.value) : result;
 }
+
+export function mapM<E, T>(results: Result<E, T>[]): Result<E, T[]> {
+  return results.reduceRight<Result<E, T[]>>(
+    (accRes, result) =>
+      bind(accRes, (acc) => map(result, (value) => [value, ...acc])),
+    ok([] as T[]),
+  );
+}
