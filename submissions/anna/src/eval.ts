@@ -60,6 +60,12 @@ function evalExpr(
   varmap: VarMap,
   funcs: Func[],
 ): EvalResult<Value> {
+  if (typeof expr === "string") {
+    const value = varmap.find(([ident, _]) => expr === ident);
+    return value
+      ? Result.ok(value[1])
+      : Result.err(`unknown variabel "${expr}"`);
+  }
   if (typeof expr === "number") return Result.ok(expr);
   if (Array.isArray(expr)) {
     return Result.mapM(expr.map((expr) => evalExpr(expr, varmap, funcs)));
@@ -132,5 +138,5 @@ main {
 }
 `;
 
-const x = evaluate(src)
-console.log(x)
+const x = evaluate(src);
+console.log(x);
