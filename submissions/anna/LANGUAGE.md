@@ -96,10 +96,10 @@ PARAMS := IDENT { ',' IDENT } | ""
 ASSIGN_FUNC := 'replace' IDENT '(' PARAMS ')' SCOPE
 BIN_OPS := '=' | '>' | '<' | '|' | '&' | '+' | '*' | '-' | '/' | '%' | 'push' | 'pop' | 'iterate' | '@'
 TERN_OPS := '?' | 'fold'
-CALL := EXPR '.' [ BIN_OPS '(' EXPR ')' | TERN_OPS '(' EXPR ',' EXPR ')' |  IDENT '(' EXPRS ')' ]
+CALL := '.' [ BIN_OPS '(' EXPR ')' | TERN_OPS '(' EXPR ',' EXPR ')' |  IDENT '(' EXPRS ')' ]
 EXPRS := EXPR { ',' EXPR } | ""
 VALUE := '[' EXPRS '] | NUMBER | IDENT;
-EXPR := CALL | VALUE
+EXPR := VALUE { CALL }
 MAIN := 'main' SCOPE
 PROGRAM := { ASSIGN_FUNC } MAIN
 ```

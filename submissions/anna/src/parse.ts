@@ -88,17 +88,25 @@ export function value(): Parser<Val> {
 
 export function expr(): Parser<Expr> {
   return (input: string, cursor: Cursor = CURSOR) =>
-    oneOf<Expr>(call(value()), value(), call(expr()))(input, cursor); // iterate
+    map2(
+      value(),
+      zeroOrMore(call()),
+      (value, calls) =>
+        calls.reduce<Expr>(
+          (expr, { ident, args }) => ({ ident, args: [expr, ...args] }),
+          value,
+        ),
+    )(input, cursor);
 }
 
 export function exprs(): Parser<Expr[]> {
   return trim(list(expr()));
 }
 
-export function call(p: Parser<Expr>): Parser<Call> {
+export function call(): Parser<Call> {
   return (input: string, cursor: Cursor = CURSOR) =>
-    map2(
-      left(p, char(".")),
+    right(
+      trimStart(char(".")),
       oneOf(
         map2(
           binOp,
@@ -125,7 +133,6 @@ export function call(p: Parser<Expr>): Parser<Call> {
           (ident, args) => ({ ident, args }),
         ),
       ),
-      (arg, { ident, args }) => ({ ident, args: [arg, ...args] }),
     )(input, cursor);
 }
 

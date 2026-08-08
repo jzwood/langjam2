@@ -163,6 +163,14 @@ Deno.test(function exprTest() {
     ident: "b",
     args: ["a", { ident: "d", args: ["c", "e"] }],
   });
+  resultIs(expr()("0.a().b()", CURSOR), {
+    ident: "b",
+    args: [{ ident: "a", args: [0] }],
+  });
+  resultIs(expr()("1.*(2).+(3)", CURSOR), {
+    ident: "+",
+    args: [{ ident: "*", args: [1, 2] }, 3],
+  });
 });
 
 Deno.test(function identTest() {

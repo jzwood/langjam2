@@ -1,14 +1,5 @@
 import * as Result from "./parser/result.ts";
-import {
-  Call,
-  compile,
-  Expr,
-  Func,
-  Program,
-  Scope,
-  Val,
-  Var,
-} from "./parse.ts";
+import { compile, Expr, Func, Var } from "./parse.ts";
 import { Cursor } from "./parser/index.ts";
 
 type ParseError = string | Cursor;
@@ -16,7 +7,7 @@ type Stream = () => Value[];
 type Value = number | Stream | Value[];
 type EvalResult<T> = Result.Result<ParseError, T>;
 
-function evaluate(src: string): EvalResult<Value> {
+export function evaluate(src: string): EvalResult<Value> {
   return Result.bind(
     compile(src),
     ({ result: { main, funcs } }) =>
@@ -26,16 +17,6 @@ function evaluate(src: string): EvalResult<Value> {
       ),
   );
 }
-
-/*
-type Var = { ident: string; expr: Expr };
-type Scope = { vars: Var[]; expr: Expr };
-type Call = { ident: string; args: Expr[] };
-type Val = number | Expr[];
-type Expr = Call | Val;
-type Func = { ident: string; params: string[]; scope: Scope };
-type Program = { funcs: Func[]; main: Scope };
-*/
 
 type VarMap = [string, Value][];
 
@@ -64,13 +45,13 @@ function evalExpr(
     const value = varmap.find(([ident, _]) => expr === ident);
     return value
       ? Result.ok(value[1])
-      : Result.err(`unknown variabel "${expr}"`);
+      : Result.err(`unknown variable "${expr}"`);
   }
   if (typeof expr === "number") return Result.ok(expr);
   if (Array.isArray(expr)) {
     return Result.mapM(expr.map((expr) => evalExpr(expr, varmap, funcs)));
   }
-  // implicitly typeof expr is CALL
+  // implicitly EXPR is CALL
   const { ident, args } = expr;
   return evalFunc(ident, args, varmap, funcs);
 }
@@ -127,16 +108,3 @@ function evalBuiltIn(
     },
   );
 }
-
-const src = `
-replace double(x) with {
-  x.*(2)
-}
-
-main {
-  4.23.double()
-}
-`;
-
-const x = evaluate(src);
-console.log(x);
