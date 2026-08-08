@@ -216,7 +216,24 @@ function appendToTree(t: oneof <int, boolean, AST, std::Nothing>, n: oneof <int,
 }
 
 
+consumer menu(ignored:string){
+    _ = ignored;
+    print("to quit, enter quit");
+    print("to see this menu any time, enter menu");
+    print("for a demo, enter demo");
+    print("to evaluate the AST, enter e");
+    print("to clear the AST, enter c");
+    print("to evaluate the AST but preserve it, enter p");
+    print("to evaluate and keep the evaluated AST, enter E");
+    print("you can append nodes or terminal objects to the AST with these symbols:");
+    print("+: adds a Coproduct node");
+    print("x: adds a Product node");
+    print("i: adds an Isomorphic node");
+    print("t: adds a true terminal (leaf)");
+    print("f: adds a false terminal (leaf)");
+    print("any integer: adds an integer terminal (leaf)");
 
+}
 
 blocking consumer demo(strs:[string]){
    
@@ -270,20 +287,8 @@ blocking consumer demo(strs:[string]){
 print("-------------------------------------------------------------------------------------------------");
 print("Welcome to Hylomorphic - an interactive visual programming language inspired by category theory");
 print("-------------------------------------------------------------------------------------------------");
+menu("");
 
-print("to quit, enter quit");
-print("for a demo, enter demo");
-print("to evaluate the AST, enter e");
-print("to clear the AST, enter c");
-print("to evaluate the AST but preserve it, enter p");
-print("to evaluate and keep the evaluated AST, enter E");
-print("you can append nodes or terminal objects to the AST with these symbols:");
-print("+: adds a Coproduct node");
-print("x: adds a Product node");
-print("i: adds an Isomorphic node");
-print("t: adds a true terminal (leaf)");
-print("f: adds a false terminal (leaf)");
-print("any integer: adds an integer terminal (leaf)");
 var running = true;
 var sc = scanner::forStdIn();
 var newnode: AST;
@@ -302,6 +307,9 @@ while (running) {
         case "demo" ->
         
         demo(["i", "x","t","f","+","t","f"]);
+
+        case "menu" ->
+        menu("");
 
         case "+" ->          
            newnode = AST({nodetype=Coproduct, left = std::Nothing, right=std::Nothing});

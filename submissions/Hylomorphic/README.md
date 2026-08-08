@@ -128,6 +128,18 @@ If this is your only usage of GituHub Codespaces, it is unlikely to exceed your 
 
 If you prefer to run it locally, bazel will be required.
 
+## How to run with docker
+
+1. clone the repo
+
+2. cd to the folder with the Dockerfile
+
+3. `docker build -t hylomorphic . `
+
+this may take a while
+
+4. docker run -it --rm hylomorphic
+
 ## Hylomorphic example usage
 
 1. Start the TUI
