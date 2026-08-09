@@ -28,8 +28,6 @@ Intead you have
 
 The ANNA interpreter is a deno CLI tested with Deno 2.9.3 (x86_64 apple-darwin).
 
-Look over the language guide in `LANGUAGE.md` or examples in `examples/`.
-
 ## AI USAGE
 
-Used AI to demystify occasional typescript errors.
+Used AI to occasionally demystify typescript errors.

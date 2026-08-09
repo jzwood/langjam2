@@ -99,7 +99,6 @@ function evalBuiltIn(
     (values) => {
       const arity = values.length;
       const [t1, t2] = values.map(typeOf);
-      console.log("VALUES", values, t1, t2, arity);
       if (arity === 2) {
         if (t1 === "number" && t2 === "number") {
           const v1 = values[0] as number;

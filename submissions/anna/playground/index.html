@@ -24,6 +24,7 @@
       font-size: 16pt;
     }
     h1,
+    code,
     button {
       font-size: 12pt;
       font-family: monospace;
@@ -33,13 +34,19 @@
   <body>
     <main>
       <h1>anna lang</h1>
-      <textarea id="souce-code"></textarea>
+      <textarea id="source-code">
+replace incr(n) with {
+  1.+(n)
+}
+
+main {
+  0.iterate(incr).take(5)
+}
+      </textarea>
       <div>
         <button id="run">run</button>
       </div>
-      <output>
-        <code id="output"></code>
-      </output>
+      <code id="output"></code>
     </main>
     <script defer src="./index.js?v=1" type="module"></script>
   </body>
