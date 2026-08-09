@@ -1,0 +1,12 @@
+# a program that looks like it counts forever. it does not produce anything.
+#
+# `count(N + 1)` is not bigger than `count(N)`: the arithmetic folds straight
+# back to a single number, so the term never grows and there is nothing to
+# watch. the checker says so before you run it.
+#
+# compare nats.kudzu, where the rule hands a number to the term on its way
+# past. one character of difference, and it is the whole language.
+
+count(N) => count(N + 1)
+
+seed count(0)

@@ -1,0 +1,7 @@
+# the smallest thing that grows forever.
+# outermost rewriting hands you one number per frame; innermost would
+# disappear into nats(N + 1) and never print anything at all.
+
+nats(N) => N : nats(N + 1)
+
+seed nats(0)

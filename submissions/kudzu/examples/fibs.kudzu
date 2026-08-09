@@ -1,0 +1,7 @@
+# the fibonacci stream as a pair that walks forward.
+# there is no base case and no recursive call to unwind: the rule hands you
+# one number and a smaller obligation, forever.
+
+fibs(A, B) => A : fibs(B, A + B)
+
+seed fibs(0, 1)
