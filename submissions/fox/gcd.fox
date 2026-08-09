@@ -1,0 +1,6 @@
+gcd(m,n) := (Iter(
+        when m<=n then m,n:=m,n-m <>
+        when n<=m then m,n:=m-n,n );
+        when m==n then m).
+
+confirm gcd(2*3*5,3*5*7) is 3*5.
