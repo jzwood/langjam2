@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>ANNA Playground</title>
+    <style>
+    html,
+    body,
+    h1 {
+      border: 0;
+      padding: 0;
+      margin: 0;
+      font-family: monospace;
+    }
+    main {
+      margin: 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    textarea {
+      resize: vertical;
+      height: 50vh;
+      font-size: 16pt;
+    }
+    h1,
+    button {
+      font-size: 12pt;
+      font-family: monospace;
+    }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>anna lang</h1>
+      <textarea id="souce-code"></textarea>
+      <div>
+        <button id="run">run</button>
+      </div>
+      <output>
+        <code id="output"></code>
+      </output>
+    </main>
+    <script defer src="./index.js?v=1" type="module"></script>
+  </body>
+</html>
