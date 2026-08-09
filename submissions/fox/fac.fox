@@ -1,0 +1,5 @@
+fac(n) := (acc:=1;
+        Iter(n,acc:=n-1,n*acc);
+        when n<=1 then acc).
+
+confirm fac(7) is 5040.
