@@ -40,15 +40,17 @@ Deno.test(function programTest() {
       funcs: [{
         ident: "double",
         params: ["a"],
-        scope: { vars: [], expr: { ident: "*", args: ["a", 2] } },
+        scope: { vars: [], expr: { kind: "call", ident: "*", args: ["a", 2] } },
       }],
       main: {
         vars: [
           {
             expr: {
+              kind: "call",
               args: [
                 8.8,
                 {
+                  kind: "call",
                   args: [
                     4.4,
                   ],
@@ -107,6 +109,7 @@ Deno.test(function scopeTest() {
         { ident: "x", expr: 0 },
       ],
       expr: {
+        kind: "call",
         ident: "?",
         args: [45, "a", ["x"]],
       },
@@ -125,6 +128,7 @@ Deno.test(function assignVarTest() {
   });
   resultIs(assignVar()("replace fizz with bar.bat(buzz)", CURSOR), {
     expr: {
+      kind: "call",
       args: [
         "bar",
         "buzz",
@@ -136,40 +140,60 @@ Deno.test(function assignVarTest() {
 });
 
 Deno.test(function exprTest() {
-  resultIs(expr()("34.+(12)", CURSOR), { ident: "+", args: [34, 12] });
-  resultIs(expr()("foo.=(bar)", CURSOR), { ident: "=", args: ["foo", "bar"] });
-  resultIs(expr()("1.?(0, 2)", CURSOR), { ident: "?", args: [1, 0, 2] });
+  resultIs(expr()("34.+(12)", CURSOR), {
+    kind: "call",
+    ident: "+",
+    args: [34, 12],
+  });
+  resultIs(expr()("foo.=(bar)", CURSOR), {
+    kind: "call",
+    ident: "=",
+    args: ["foo", "bar"],
+  });
+  resultIs(expr()("1.?(0, 2)", CURSOR), {
+    kind: "call",
+    ident: "?",
+    args: [1, 0, 2],
+  });
   resultIs(expr()("[1,2,3].@(2)", CURSOR), {
+    kind: "call",
     ident: "@",
     args: [[1, 2, 3], 2],
   });
   resultIs(expr()("a.sum(b, c, d)", CURSOR), {
+    kind: "call",
     ident: "sum",
     args: ["a", "b", "c", "d"],
   });
   resultIs(expr()("1.+(2.*(3))", CURSOR), {
+    kind: "call",
     ident: "+",
-    args: [1, { ident: "*", args: [2, 3] }],
+    args: [1, { kind: "call", ident: "*", args: [2, 3] }],
   });
   resultIs(expr()("[1].?([1], [2,3])", CURSOR), {
+    kind: "call",
     ident: "?",
     args: [[1], [1], [2, 3]],
   });
   resultIs(expr()("11.11.-(22.22)", CURSOR), {
+    kind: "call",
     ident: "-",
     args: [11.11, 22.22],
   });
   resultIs(expr()("a.b(c.d(e))", CURSOR), {
+    kind: "call",
     ident: "b",
-    args: ["a", { ident: "d", args: ["c", "e"] }],
+    args: ["a", { kind: "call", ident: "d", args: ["c", "e"] }],
   });
   resultIs(expr()("0.a().b()", CURSOR), {
+    kind: "call",
     ident: "b",
-    args: [{ ident: "a", args: [0] }],
+    args: [{ kind: "call", ident: "a", args: [0] }],
   });
   resultIs(expr()("1.*(2).+(3)", CURSOR), {
+    kind: "call",
     ident: "+",
-    args: [{ ident: "*", args: [1, 2] }, 3],
+    args: [{ kind: "call", ident: "*", args: [1, 2] }, 3],
   });
 });
 
