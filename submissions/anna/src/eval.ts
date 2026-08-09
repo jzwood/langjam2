@@ -1,5 +1,5 @@
 import * as Result from "./parser/result.ts";
-import { compile, Expr, Func, Value, Var } from "./parse.ts";
+import { compile, Expr, Func, Stream, Value, Var } from "./parse.ts";
 import { Cursor } from "./parser/index.ts";
 
 type ParseError = string | Cursor;
@@ -41,9 +41,7 @@ function evalExpr(
 ): EvalResult<Value> {
   if (typeof expr === "string") {
     const value = varmap.find(([ident, _]) => expr === ident);
-    return value
-      ? Result.ok(value[1])
-      : Result.err(`unknown variable "${expr}"`);
+    return value ? Result.ok(value[1]) : Result.ok(expr);
   }
   if (typeof expr === "number") return Result.ok(expr);
   if (Array.isArray(expr)) {
@@ -101,6 +99,7 @@ function evalBuiltIn(
     (values) => {
       const arity = values.length;
       const [t1, t2] = values.map(typeOf);
+      console.log("VALUES", values, t1, t2, arity);
       if (arity === 2) {
         if (t1 === "number" && t2 === "number") {
           const v1 = values[0] as number;
@@ -115,19 +114,17 @@ function evalBuiltIn(
           if (ident === ">") return Result.ok(Number(v1 > v2));
           if (ident === "|") return Result.ok(v1 || v2);
           if (ident === "&") return Result.ok(v1 && v2);
-        } else if (t1 === "array" && t2 === "number") {
+        } else if (ident === "@" && t1 === "array" && t2 === "number") {
           const v1 = values[0] as Value[];
           const v2 = values[1] as number;
-          if (ident === "@") {
-            return v1.length
-              ? Result.ok(v1.at(v2) as Value)
-              : Result.err("cannot pop an empty list");
-          }
-        } else if (t1 === "array") {
+          return v1.length
+            ? Result.ok(v1.at(v2) as Value)
+            : Result.err("cannot pop an empty list");
+        } else if (["push", "pop"].includes(ident) && t1 === "array") {
           const v1 = values[0] as Value[];
           const v2 = values[1] as Value;
           if (ident === "push") return Result.ok([...v1, v2]);
-          if (ident === "pop") return Result.ok(v1.slice(0, -1));
+          if (ident === "pop") return Result.ok(v1.slice(0, -1)); // this is wrong -- this should be arity 1
         } else if (
           ident === "iterate" && ["number", "array"].includes(t1) &&
           t2 === "string"
@@ -140,6 +137,14 @@ function evalBuiltIn(
           if (func) {
             return Result.ok({ kind: "stream", func, seed: val });
           }
+        } else if (ident === "take" && t1 == "object" && t2 === "number") {
+          const { func, seed } = values[0] as Stream;
+          const num = values[1] as number;
+          return Array(num - 1).fill(0).reduce<EvalResult<Value>>(
+            (acc, _) =>
+              Result.bind(acc, (val) => evalFunc(func.ident, [val], [], funcs)),
+            evalFunc(func.ident, [seed], [], funcs),
+          );
         }
       }
       return Result.err(`could not find function that matched "${ident}"`);

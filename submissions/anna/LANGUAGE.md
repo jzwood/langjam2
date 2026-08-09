@@ -36,13 +36,13 @@ floats:
 lists:
 
 ```
-push, pop, at, =
+push, pop, fold, @
 ```
 
 streams:
 
 ```
-drop, take, while
+take
 ```
 
 ### looping
@@ -63,10 +63,10 @@ replace nextfib(list) with {
   [snd, fst.+(snd)]
 }
 replace fibalg(acc, pair) with {
-  acc.push(pair.a(2))
+  acc.push(pair.@(2))
 }
 replace fib(n) with {
-  [1, 1].iterate(nextfib).fold(fibalg, [])
+  [1, 1].iterate(nextfib).take(n).fold(fibalg, [])
 }
 ```
 

@@ -28,7 +28,7 @@ export type Var = { ident: string; expr: Expr };
 export type Scope = { vars: Var[]; expr: Expr };
 export type Call = { kind: "call"; ident: string; args: Expr[] };
 export type Stream = { kind: "stream"; func: Func; seed: Value };
-export type Value = number | string | Expr[] | Stream;
+export type Value = number | Expr[] | string | Stream; // stream cannot be written explicitly
 export type Expr = Call | Value;
 export type Func = { ident: string; params: string[]; scope: Scope };
 export type Program = { funcs: Func[]; main: Scope };
@@ -116,7 +116,7 @@ export function call(): Parser<Call> {
         map2(
           binOp,
           wrap("(", expr(), ")"),
-          (ident, arg) => ({ kind: "call", ident, args: [arg] } as Call),
+          (ident, arg) => ({ kind: "call", ident, args: [arg] } satisfies Call),
         ),
         map2(
           ternOp,
@@ -130,12 +130,12 @@ export function call(): Parser<Call> {
             ),
             ")",
           ),
-          (ident, args) => ({ kind: "call", ident, args } as Call),
+          (ident, args) => ({ kind: "call", ident, args } satisfies Call),
         ),
         map2(
           ident,
           oneOf(map(word("()"), () => []), wrap("(", exprs(), ")")),
-          (ident, args) => ({ kind: "call", ident, args } as Call),
+          (ident, args) => ({ kind: "call", ident, args } satisfies Call),
         ),
       ),
     )(input, cursor);

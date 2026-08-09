@@ -40,4 +40,37 @@ Deno.test(function evaluateTest() {
     }
 `;
   assertEquals({ ok: true, value: 3 }, evaluate(src));
+
+  src = `
+    replace incr(n) with {
+      1.+(n)
+    }
+
+    main {
+      0.iterate(incr).take(5)
+    }
+`;
+  assertEquals({ ok: true, value: 5 }, evaluate(src));
+
+  src = `
+    replace psh(arr) with {
+      arr.push(1).push(2)
+    }
+
+    main {
+      [].psh()
+    }
+`;
+  assertEquals({ ok: true, value: [1, 2] }, evaluate(src));
+
+  src = `
+    replace psh(arr) with {
+      arr.push(arr.@(0))
+    }
+
+    main {
+      [3].iterate(psh).take(4)
+    }
+`;
+  assertEquals({ ok: true, value: [3, 3, 3, 3, 3] }, evaluate(src));
 });
