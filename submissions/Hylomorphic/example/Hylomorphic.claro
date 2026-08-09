@@ -1,0 +1,365 @@
+# a Product node
+atom Product
+# a Coproduct node
+atom Coproduct
+# an isomorphic node
+atom Iso
+
+# the result of evaluating an AST
+newtype EvalResult: oneof <int, boolean, AST, std::Nothing>
+
+# the AST
+newtype AST :struct {
+  nodetype: oneof <Product, Coproduct, Iso>, 
+  left:  oneof <int, boolean, AST, std::Nothing>,
+  right: oneof <int, boolean, AST, std::Nothing>
+}
+
+contract Evaluable<X> {
+    function eval(t: X) -> EvalResult;
+}
+
+implement Evaluable<int> {
+    function eval(i: int) -> EvalResult {       
+        return EvalResult(i);
+    }
+}
+
+implement Evaluable<boolean> {
+    function eval(b: boolean) -> EvalResult {       
+        return EvalResult(b);
+    }
+}
+
+implement Evaluable<std::Nothing> {
+    function eval(i:std::Nothing) -> EvalResult {
+        return EvalResult(i);
+    }
+}
+
+implement Evaluable<AST> {
+    function eval(t:AST) -> EvalResult {
+      var lres = unwrap(Evaluable::eval(unwrap(t).left));
+      var rres = unwrap(Evaluable::eval(unwrap(t).right));
+      if (( lres instanceof int) and (rres instanceof int)){
+        match (unwrap(t).nodetype){
+         case _:Coproduct -> 
+                       
+                return EvalResult(lres + rres);
+
+         case _:Product -> return EvalResult( lres * rres);
+         case _:Iso -> return EvalResult( lres == rres);
+      }
+     
+  }
+      if (( lres instanceof boolean) and (rres instanceof boolean)){
+        match (unwrap(t).nodetype){
+         case _:Coproduct -> 
+                # coproduct in the Bool category is OR      
+                return EvalResult(lres or rres);
+                           
+         case _:Product -> 
+                # product in the bool category is AND
+                return EvalResult(lres and rres);
+         case _:Iso -> return EvalResult( lres == rres);
+      }
+      
+  }
+      if (( lres instanceof boolean) and (rres instanceof int)){
+        match (unwrap(t).nodetype){
+         case _:Coproduct -> 
+                       
+                return EvalResult( intrep(lres) + rres);
+
+         case _:Product -> return EvalResult(intrep(lres) * rres);
+         case _:Iso -> return EvalResult(intrep(lres) == rres);
+      }
+      }
+      if (( rres instanceof boolean) and (lres instanceof int)){
+        match (unwrap(t).nodetype){
+         case _:Coproduct -> 
+                # if the node has mixed type children, 
+                # use the integer representation of booleans      
+                return EvalResult( intrep(rres) + lres);
+
+         case _:Product ->
+                 return EvalResult(intrep(rres) * lres);
+         case _:Iso -> return EvalResult( lres == intrep(rres));
+      }
+      }
+ return EvalResult(AST({nodetype=unwrap(t).nodetype, left=lres, right=rres}));
+      
+    }
+}
+
+contract Prettyprintable<X> {
+    function prettyprint(t: X) -> string;
+}
+
+implement Prettyprintable<int> {
+  function prettyprint(i: int) -> string {
+        var emptyString = string_builder::create();
+        var intStringBuilder = string_builder::add(emptyString, i);
+
+        return string_builder::build(intStringBuilder);
+  }
+}
+
+implement Prettyprintable<boolean> {
+  function prettyprint(b: boolean) -> string {
+        var emptyString = string_builder::create();
+        var boolStringBuilder = string_builder::add(emptyString, b);
+
+        return string_builder::build(boolStringBuilder);
+  }
+}
+
+implement Prettyprintable<std::Nothing> {
+    function prettyprint(ignored:std::Nothing) -> string{
+        _ = ignored;
+         return "";
+    }
+}
+
+implement Prettyprintable<AST> {
+    function prettyprint(t: AST) -> string{
+        return printTree(t,0);
+    }
+}
+
+implement Prettyprintable<EvalResult> {
+    function prettyprint(e: EvalResult) -> string{
+        var unwrapped = unwrap(e);
+        if (unwrapped instanceof int){
+            return Prettyprintable::prettyprint(unwrapped);
+        }
+        if (unwrapped instanceof boolean){
+            return Prettyprintable::prettyprint(unwrapped);
+        }
+        if (unwrapped instanceof AST){
+            return Prettyprintable::prettyprint(unwrapped);
+        }
+        if (unwrapped instanceof std::Nothing){
+            return Prettyprintable::prettyprint(unwrapped);
+        }
+        return "";
+
+    }
+}
+
+# integer representation of a boolean
+function intrep(b: boolean) -> int{
+  if(b){
+       # True is the terminal object in the Bool category
+       # as is the singleton set (1) in Set
+       return 1;
+       }
+       else{
+       # False is the initial object in the Bool category
+       # as is the empty set (0) in Set
+       return 0;
+   }
+}
+
+# helper for the Prettyprintable contract
+function printTree(t: oneof <int, boolean, AST, std::Nothing>, level: int) -> string{
+        var stringBuilder = string_builder::create();
+        repeat(level -1){
+            stringBuilder = string_builder::add(stringBuilder, " ");
+
+        }
+        if (level > 0){
+        stringBuilder = string_builder::add(stringBuilder, "|_");
+        }
+        if (t instanceof int){           
+        stringBuilder = string_builder::add(stringBuilder, t);
+
+        
+        }
+        if (t instanceof boolean){           
+        stringBuilder = string_builder::add(stringBuilder, t);
+
+        
+        }
+        if (t instanceof AST){           
+        stringBuilder = string_builder::add(stringBuilder, unwrap(t).nodetype);
+        stringBuilder = string_builder::add(stringBuilder, "\n");
+        stringBuilder = string_builder::add(stringBuilder, printTree(unwrap(t).right, level+1));
+        stringBuilder = string_builder::add(stringBuilder, "\n");
+        stringBuilder = string_builder::add(stringBuilder, printTree(unwrap(t).left, level+1));        
+        }
+
+        return string_builder::build(stringBuilder);
+}
+
+#the main building function of the AST
+function appendToTree(t: oneof <int, boolean, AST, std::Nothing>, n: oneof <int, boolean, AST, std::Nothing>) -> oneof <int, boolean, AST, std::Nothing>{
+    
+    if (t instanceof AST) {
+        if (unwrap(t).left instanceof std::Nothing){
+            return AST({nodetype=unwrap(t).nodetype, left=n, right=unwrap(t).right});
+        }
+        var lapp = appendToTree(unwrap(t).left, n);
+        if(lapp == unwrap(t).left){
+            var rapp = appendToTree(unwrap(t).right, n);
+            return AST({nodetype=unwrap(t).nodetype, left=unwrap(t).left, right=rapp});
+        }
+        else{
+            return AST({nodetype=unwrap(t).nodetype, left=lapp, right=unwrap(t).right});
+        }
+        
+    }
+    if (t instanceof std::Nothing){
+        return n;
+    }
+   return t;
+}
+
+
+consumer menu(ignored:string){
+    _ = ignored;
+    print("to quit, enter quit");
+    print("to see this menu any time, enter menu");
+    print("for a demo, enter demo");
+    print("to evaluate the AST, enter e");
+    print("to clear the AST, enter c");
+    print("to evaluate the AST but preserve it, enter p");
+    print("to evaluate and keep the evaluated AST, enter E");
+    print("you can append nodes or terminal objects to the AST with these symbols:");
+    print("+: adds a Coproduct node");
+    print("x: adds a Product node");
+    print("i: adds an Isomorphic node");
+    print("t: adds a true terminal (leaf)");
+    print("f: adds a false terminal (leaf)");
+    print("any integer: adds an integer terminal (leaf)");
+
+}
+
+blocking consumer demo(strs:[string]){
+   
+    print("----");
+    
+    var scin = scanner::forStdIn();
+
+    
+    var curr_tree:  oneof <int, boolean, AST, std::Nothing> = std::Nothing;
+    var symbols: {string:oneof <int, boolean, AST, std::Nothing>} = {
+        "t":true, 
+        "f":false,
+        "x":AST({nodetype=Product, left = std::Nothing, right=std::Nothing}),
+        "+":AST({nodetype=Coproduct, left = std::Nothing, right=std::Nothing}),
+        "i":AST({nodetype=Iso, left = std::Nothing, right=std::Nothing})};
+    for (s in strs){
+        print(s);
+        print("press Enter to continue");
+        
+         _ = scanner::nextLine(scin);
+        
+        if (s in symbols){
+        curr_tree = appendToTree(curr_tree,symbols[s]);
+        }
+        print("This is your current AST:");
+        print("-------------------------");
+        print(Prettyprintable::prettyprint(EvalResult(curr_tree)));
+        print("press Enter to continue");
+        
+         _ = scanner::nextLine(scin);
+
+
+
+
+    }
+    print("Result of evaluating the AST:");
+    print("-----------------------------");
+    print (Prettyprintable::prettyprint(Evaluable::eval(curr_tree)));
+    print("-----------------------------");
+    print("end of demo");
+     print("-----------------------------");
+
+
+
+
+}
+
+
+
+  # the main interactive loop
+print("-------------------------------------------------------------------------------------------------");
+print("Welcome to Hylomorphic - an interactive visual programming language inspired by category theory");
+print("-------------------------------------------------------------------------------------------------");
+menu("");
+
+var running = true;
+var sc = scanner::forStdIn();
+var newnode: AST;
+var ast:  oneof <int, boolean, AST, std::Nothing> = std::Nothing;
+while (running) {
+    print("Enter a value:");
+
+    var lineResult = scanner::nextLine(sc);
+    
+    if (lineResult instanceof string){
+        match (lineResult) {
+        case "quit" ->
+           print("Goodbye.");
+            running = false;
+            ast = std::Nothing;
+        case "demo" ->
+        
+        demo(["i", "x","t","f","+","t","f"]);
+
+        case "menu" ->
+        menu("");
+
+        case "+" ->          
+           newnode = AST({nodetype=Coproduct, left = std::Nothing, right=std::Nothing});
+           ast = appendToTree(ast,newnode);
+
+        case "x" ->          
+           newnode = AST({nodetype=Product, left = std::Nothing, right=std::Nothing});
+           ast = appendToTree(ast,newnode);
+        case "i" ->          
+           newnode = AST({nodetype=Iso, left = std::Nothing, right=std::Nothing});
+           ast = appendToTree(ast,newnode);
+        case "t" ->
+           ast = appendToTree(ast,true);
+          
+        case "f" ->
+           ast = appendToTree(ast,false);
+         
+        case "e" ->
+           print("Result of evaluating the AST:");
+           print("-----------------------------");
+           print (Prettyprintable::prettyprint(Evaluable::eval(ast)));
+           ast = std::Nothing;
+
+        case "p" ->
+           print("Result of evaluating the AST:");
+           print("-----------------------------");
+           print (Prettyprintable::prettyprint(Evaluable::eval(ast)));
+           print("Preserving the AST.");
+        case "c" ->
+           ast = std::Nothing;
+        case "E" ->
+           var evalres = (Evaluable::eval(ast));
+           print("Result of evaluating the AST:");
+           print("-----------------------------");
+           print (Prettyprintable::prettyprint(evalres));
+           ast = unwrap(evalres);
+           
+        case _ -> var strSc = scanner::forString(lineResult);
+            var intResult = scanner::nextInt(strSc);
+            if (intResult instanceof int) {
+               ast = appendToTree(ast,intResult);
+            } else {
+               print("'{lineResult}' is not a command known to Hylomorphic.");
+            }        
+    }
+    print("This is your current AST:");
+    print("-------------------------");
+    print(Prettyprintable::prettyprint(EvalResult(ast)));
+    }
+    else{
+         running = false;
+    }
+}

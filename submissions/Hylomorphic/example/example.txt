@@ -1,0 +1,153 @@
+Hylomorphic example
+------------------
+
+As Hylomorphic does not read source code like most programming languages,
+I can't provide a source file that can be run in Hylomorphic.
+Instead, here are instructions to run programs in the TUI.
+
+First example: arithmetric
+-----------------------------
+
+1. Start the TUI
+From the root directory, run 
+bazel run //example:Hylomorphic_bin
+
+2. Start the AST with a node, e.g. Product by typing: x
+Your AST now looks like this:
+
+Product
+|_
+|_
+3. Enter an integer:
+5
+Your AST now looks like this:
+Product
+|_
+|_5
+4. Enter another node, e.g. Coproduct:
++
+Your AST looks like this:
+Product
+|_Coproduct
+ |_
+ |_
+|_5
+5. Enter another integer:
+3
+Your AST now looks like this:
+Product
+|_Coproduct
+ |_
+ |_3
+|_5
+6. Try evaluating your AST, but preserving it, by entering p:
+First, the evaluation result is displayed. It looks the same as your tree because nothing in your AST can be evaluated yet.
+Product
+|_Coproduct
+ |_
+ |_3
+|_5
+Your AST is preserved. 
+Product
+|_Coproduct
+ |_
+ |_3
+|_5
+7. Enter a boolean, eg true by typing: t
+your AST now looks like this:
+Product
+|_Coproduct
+ |_true
+ |_3
+|_5
+8. Evaluate it: e
+The result is 20, which corresponds to (3+1) * 5
+
+Another example: boolean logic
+-------------------------------------
+
+1. Start the TUI
+From the root directory, run 
+bazel run //example:Hylomorphic_bin
+
+2. Create a Product node by entering x (follwed by enter)
+Your AST is displayed and should look like this:
+Product
+|_
+|_
+
+3. Enter a Coproduct node by typing + (follwed by enter)
+Your AST now looks like this
+Product
+|_
+|_Coproduct
+ |_
+ |_
+
+4. Enter a Product node by typing x
+Now your AST looks like this:
+Product
+|_
+|_Coproduct
+ |_
+ |_Product
+  |_
+  |_
+
+5. Append boolean literals: for TRUE type t 
+Now your AST looks like this:
+Product
+|_
+|_Coproduct
+ |_
+ |_Product
+  |_
+  |_true
+
+6. Append another boolean literal. For FALSE type f
+Now your AST looks like this:
+Product
+|_
+|_Coproduct
+ |_
+ |_Product
+  |_false
+  |_true
+
+7. Try evaluating the AST 
+and keeping the evaluation result as your new starting point:
+type E 
+your new AST looks like this:
+Product
+|_
+|_Coproduct
+ |_
+ |_false
+It has been partially evaluated.
+Only the final layer Product node was fully saturated and was evaluated
+to FALSE. Recall that the (categorical) product corresponds to AND(in Bool*) 
+(TRUE AND FALSE = FALSE)
+
+8. enter another boolean: t 
+Product
+|_
+|_Coproduct
+ |_true
+ |_false
+
+9. and another: t 
+Product
+|_true
+|_Coproduct
+ |_true
+ |_false
+
+10. evaluate the AST: e 
+Result of evaluating the AST:
+-----------------------------
+true
+This whole program corresponds to the expression: 
+TRUE AND (TRUE OR (TRUE AND FALSE))
+We evaluated the innermost parentheses before,
+so the final tree under 9 was already reduced to:
+TRUE AND (TRUE OR FALSE)

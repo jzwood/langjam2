@@ -1,0 +1,6 @@
+# Bazel convenience symlinks point outside the build context (into the
+# host's ~/.cache/bazel) and must not be copied into the image.
+bazel-*
+
+# Local Bazel output/cache dirs, if any exist alongside the repo.
+.cache/

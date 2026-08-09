@@ -1,0 +1,19 @@
+{
+  "name": "Hylomorphic (Claro TUI)",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/java:1": {
+      "version": "17"
+    },
+    "ghcr.io/devcontainers/features/node:1": {}
+  },
+
+  // Install bazelisk globally and symlink directly into standard system binary path
+  "postCreateCommand": "sudo npm install -g @bazel/bazelisk && sudo ln -sf $(which bazelisk) /usr/bin/bazel",
+
+  "containerEnv": {
+    "LANG": "C.UTF-8",
+    "LC_ALL": "C.UTF-8"
+  }
+}

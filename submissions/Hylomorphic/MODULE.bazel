@@ -1,0 +1,11 @@
+module(name = "example-claro-module")
+
+bazel_dep(name = "claro-lang", version = "0.1.509")
+
+archive_override(
+    module_name = "claro-lang",
+    urls = ["https://github.com/JasonSteving99/claro-lang/archive/refs/tags/v0.1.509.tar.gz"],
+    strip_prefix = "claro-lang-0.1.509",
+    # You may need to supply the integrity hash — get it with:
+    # curl -sL <url> | sha256sum
+)
