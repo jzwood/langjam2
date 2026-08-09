@@ -1,10 +1,8 @@
 import * as Result from "./parser/result.ts";
-import { compile, Expr, Func, Var } from "./parse.ts";
+import { compile, Expr, Func, Value, Var } from "./parse.ts";
 import { Cursor } from "./parser/index.ts";
 
 type ParseError = string | Cursor;
-type Stream = () => Value[];
-type Value = number | Stream | Value[];
 type EvalResult<T> = Result.Result<ParseError, T>;
 
 export function evaluate(src: string): EvalResult<Value> {
@@ -51,9 +49,16 @@ function evalExpr(
   if (Array.isArray(expr)) {
     return Result.mapM(expr.map((expr) => evalExpr(expr, varmap, funcs)));
   }
-  // implicitly EXPR is CALL
-  const { ident, args } = expr;
-  return evalFunc(ident, args, varmap, funcs);
+  if (expr.kind === "call") {
+    const { ident, args } = expr;
+    return evalFunc(ident, args, varmap, funcs);
+  }
+
+  if (expr.kind === "stream") {
+    return Result.ok(expr);
+  }
+
+  assertNever(expr);
 }
 
 function evalFunc(
@@ -95,16 +100,58 @@ function evalBuiltIn(
     Result.mapM(exprs.map((expr) => evalExpr(expr, varmap, funcs))),
     (values) => {
       const arity = values.length;
-      const types = values.map((v) => typeof v);
-      if (arity === 2 && types.every((t) => t === "number")) {
-        const v1 = values[0] as number;
-        const v2 = values[1] as number;
-        if (ident === "+") return Result.ok(v1 + v2);
-        if (ident === "-") return Result.ok(v1 - v2);
-        if (ident === "*") return Result.ok(v1 * v2);
-        if (ident === "/") return Result.ok(v1 / v2);
+      const [t1, t2] = values.map(typeOf);
+      if (arity === 2) {
+        if (t1 === "number" && t2 === "number") {
+          const v1 = values[0] as number;
+          const v2 = values[1] as number;
+          if (ident === "+") return Result.ok(v1 + v2);
+          if (ident === "-") return Result.ok(v1 - v2);
+          if (ident === "*") return Result.ok(v1 * v2);
+          if (ident === "/") return Result.ok(v1 / v2);
+          if (ident === "=") return Result.ok(Number(v1 === v2));
+          if (ident === "%") return Result.ok(v1 % v2);
+          if (ident === "<") return Result.ok(Number(v1 < v2));
+          if (ident === ">") return Result.ok(Number(v1 > v2));
+          if (ident === "|") return Result.ok(v1 || v2);
+          if (ident === "&") return Result.ok(v1 && v2);
+        } else if (t1 === "array" && t2 === "number") {
+          const v1 = values[0] as Value[];
+          const v2 = values[1] as number;
+          if (ident === "@") {
+            return v1.length
+              ? Result.ok(v1.at(v2) as Value)
+              : Result.err("cannot pop an empty list");
+          }
+        } else if (t1 === "array") {
+          const v1 = values[0] as Value[];
+          const v2 = values[1] as Value;
+          if (ident === "push") return Result.ok([...v1, v2]);
+          if (ident === "pop") return Result.ok(v1.slice(0, -1));
+        } else if (
+          ident === "iterate" && ["number", "array"].includes(t1) &&
+          t2 === "string"
+        ) {
+          const val = values[0] as Value;
+          const name = values[1] as string;
+          const func = funcs.find((func) =>
+            func.ident === name && func.params.length === 1
+          );
+          if (func) {
+            return Result.ok({ kind: "stream", func, seed: val });
+          }
+        }
       }
       return Result.err(`could not find function that matched "${ident}"`);
     },
   );
+}
+
+function typeOf<T>(x: T): string {
+  if (Array.isArray(x)) return "array";
+  return typeof x;
+}
+
+function assertNever(x: never): never {
+  throw new Error(`Unhandled case: ${JSON.stringify(x)}`);
 }

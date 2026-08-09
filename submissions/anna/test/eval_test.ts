@@ -1,4 +1,4 @@
-import { assertEquals, fail } from "@std/assert";
+import { assertEquals } from "@std/assert";
 
 import { evaluate } from "../src/eval.ts";
 
@@ -17,7 +17,8 @@ Deno.test(function evaluateTest() {
   src = `
     replace incr(a) with {
       replace x with a
-      x.+(1)
+      replace y with x.-(0)
+      y.+(1)
     }
 
     main {

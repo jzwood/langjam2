@@ -49,10 +49,6 @@ drop, take, while
 
 - use `iterate` to create a stream
 
-```
-iterate <value> with <function_name | function_definition>
-```
-
 example:
 
 ```

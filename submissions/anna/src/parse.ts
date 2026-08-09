@@ -26,9 +26,10 @@ import {
 
 export type Var = { ident: string; expr: Expr };
 export type Scope = { vars: Var[]; expr: Expr };
-export type Call = { ident: string; args: Expr[] };
-export type Val = number | string | Expr[];
-export type Expr = Call | Val;
+export type Call = { kind: "call"; ident: string; args: Expr[] };
+export type Stream = { kind: "stream"; func: Func; seed: Value };
+export type Value = number | string | Expr[] | Stream;
+export type Expr = Call | Value;
 export type Func = { ident: string; params: string[]; scope: Scope };
 export type Program = { funcs: Func[]; main: Scope };
 
@@ -82,8 +83,8 @@ export const number: Parser<number> = map2(
   (whole, fractional) => Number(whole + "." + (fractional || 0)),
 );
 
-export function value(): Parser<Val> {
-  return oneOf<Val>(wrap("[", exprs(), "]"), number, ident);
+export function value(): Parser<Value> {
+  return oneOf<Value>(wrap("[", exprs(), "]"), number, ident);
 }
 
 export function expr(): Parser<Expr> {
@@ -93,7 +94,11 @@ export function expr(): Parser<Expr> {
       zeroOrMore(call()),
       (value, calls) =>
         calls.reduce<Expr>(
-          (expr, { ident, args }) => ({ ident, args: [expr, ...args] }),
+          (expr, { ident, args }) => ({
+            kind: "call",
+            ident,
+            args: [expr, ...args],
+          }),
           value,
         ),
     )(input, cursor);
@@ -111,7 +116,7 @@ export function call(): Parser<Call> {
         map2(
           binOp,
           wrap("(", expr(), ")"),
-          (ident, arg) => ({ ident, args: [arg] }),
+          (ident, arg) => ({ kind: "call", ident, args: [arg] } as Call),
         ),
         map2(
           ternOp,
@@ -125,12 +130,12 @@ export function call(): Parser<Call> {
             ),
             ")",
           ),
-          (ident, args) => ({ ident, args }),
+          (ident, args) => ({ kind: "call", ident, args } as Call),
         ),
         map2(
           ident,
           oneOf(map(word("()"), () => []), wrap("(", exprs(), ")")),
-          (ident, args) => ({ ident, args }),
+          (ident, args) => ({ kind: "call", ident, args } as Call),
         ),
       ),
     )(input, cursor);
