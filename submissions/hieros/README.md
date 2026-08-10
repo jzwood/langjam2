@@ -14,13 +14,14 @@ Node.js runtime + if there are any unrendered boxes in this readme, you will nee
 Read [this](https://en.wikipedia.org/wiki/Egyptian_numerals#Digits_and_numbers) first to learn how Egyptian hieroglyphic numerals work. You can also find the Unicode characters you'll need to use Hieros as image captions: 𓏤 is 1, 𓎆 is 10, etc.
 
 As of writing, you can do exactly three things in Hieros:
-# [Addition](https://en.wikipedia.org/wiki/Ancient_Egyptian_mathematics#Notation)
+1. [Addition](https://en.wikipedia.org/wiki/Ancient_Egyptian_mathematics#Notation)
 Syntax: <expr> 𓂻 <expr>
-# Subtraction
+2. Subtraction
 Syntax: <expr> 𓂽 <expr>
-# Variable setting/getting (only 1 variable supported)
-The single supported "variable name" is 𓊢𓂝𓇤.* Setting it: 𓊢𓂝𓇤 <expr>
-* Printing it: 𓊢𓂝𓇤 (by itself)
+3. Variable setting/getting (only 1 variable supported)
+The single supported "variable name" is 𓊢𓂝𓇤*
+Setting it: 𓊢𓂝𓇤 <expr>
+Printing it: 𓊢𓂝𓇤 (by itself)
 
 *This translates as "unknown quantity," and [was actually used in algebra problems](https://en.wikipedia.org/wiki/Egyptian_algebra#Aha_problems,_linear_equations_and_false_position)
 
