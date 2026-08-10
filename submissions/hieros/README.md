@@ -19,9 +19,7 @@ Syntax: <expr> 𓂻 <expr>
 2. Subtraction
 Syntax: <expr> 𓂽 <expr>
 3. Variable setting/getting (only 1 variable supported)
-The single supported "variable name" is 𓊢𓂝𓇤*
-Setting it: 𓊢𓂝𓇤 <expr>
-Printing it: 𓊢𓂝𓇤 (by itself)
+The single supported "variable name" is 𓊢𓂝𓇤*. Set it like this: 𓊢𓂝𓇤 <expr> And print it like this: 𓊢𓂝𓇤
 
 *This translates as "unknown quantity," and [was actually used in algebra problems](https://en.wikipedia.org/wiki/Egyptian_algebra#Aha_problems,_linear_equations_and_false_position)
 
@@ -47,10 +45,10 @@ I used Claude to:
 * Ideate a bit on potential language features
 * Figure out how to set up my terminal to display hieroglyphs correctly
 * Troubleshoot bugs and/or suggest/remind me of the most canonical ways to do a few things related to:
-** UTF-16 surrogate pairs
-** Nested operator logic in the parser
-** Mapping ranges of integers to objects (for converting hieroglyphs to numbers)
-** Checking deep equality of arrays
-** require/module stuff for moving tests to their own file
+  * UTF-16 surrogate pairs
+  * Nested operator logic in the parser
+  * Mapping ranges of integers to objects (for converting hieroglyphs to numbers)
+  * Checking deep equality of arrays
+  * require/module stuff for moving tests to their own file
 * Add the REPL on top of the core tokenizer/parser/transpiler logic
 * Conduct a final code review
