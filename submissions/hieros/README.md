@@ -15,11 +15,11 @@ Read [this](https://en.wikipedia.org/wiki/Egyptian_numerals#Digits_and_numbers) 
 
 As of writing, you can do exactly three things in Hieros:
 1. [Addition](https://en.wikipedia.org/wiki/Ancient_Egyptian_mathematics#Notation)
-Syntax: <expr> 𓂻 <expr>
+Syntax: &lt;expr&gt; 𓂻 &lt;expr&gt;
 2. Subtraction
-Syntax: <expr> 𓂽 <expr>
+Syntax: &lt;expr&gt; 𓂽 &lt;expr&gt;
 3. Variable setting/getting (only 1 variable supported)
-The single supported "variable name" is 𓊢𓂝𓇤*. Set it like this: 𓊢𓂝𓇤 <expr> And print it like this: 𓊢𓂝𓇤
+The single supported "variable name" is 𓊢𓂝𓇤*. Set it like this: 𓊢𓂝𓇤 &lt;expr&gt; And print it like this: 𓊢𓂝𓇤
 
 *This translates as "unknown quantity," and [was actually used in algebra problems](https://en.wikipedia.org/wiki/Egyptian_algebra#Aha_problems,_linear_equations_and_false_position)
 
