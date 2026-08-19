@@ -97,10 +97,7 @@ function evalBuiltIn(
   return Result.bind(
     Result.mapM(exprs.map((expr) => evalExpr(expr, varmap, funcs))),
     (values) => {
-      const arity = values.length;
       const [v1, v2, v3] = values;
-      const [t1, t2, t3] = values.map(typeOf);
-
       if (ident === "=") {
         return Result.ok(Number(JSON.stringify(v1) === JSON.stringify(v2)));
       } else if (ident === "/=") {
@@ -117,50 +114,50 @@ function evalBuiltIn(
         return Result.ok(Number(v1 || v2));
       } else if (ident === "&") {
         return Result.ok(Number(v1 && v2));
-      } else if (ident === "+") {
-        return Result.ok((v1 as number) + (v2 as number));
-      } else if (ident === "*") {
-        return Result.ok((v1 as number) * (v2 as number));
-      } else if (ident === "-") {
-        return Result.ok((v1 as number) - (v2 as number));
-      } else if (ident === "/") {
-        return Result.ok((v1 as number) / (v2 as number));
-      } else if (ident === "%") {
-        return Result.ok((v1 as number) % (v2 as number));
-      } else if (ident === "@") {
-        return Result.ok((v1 as Value[])[v2 as number]);
-      } else if (ident === "push") {
-        return Result.ok([...(v1 as Value[]), v2]);
-      } else if (ident === "take") {
-        const { func, seed } = v1 as Stream;
-        const num = v2 as number;
-        return Array(num - 1).fill(0).reduce<EvalResult<Value>>(
+      } else if (ident === "+" && isNum(v1) && isNum(v2)) {
+        return Result.ok(v1 + v2);
+      } else if (ident === "*" && isNum(v1) && isNum(v2)) {
+        return Result.ok(v1 * v2);
+      } else if (ident === "-" && isNum(v1) && isNum(v2)) {
+        return Result.ok(v1 - v2);
+      } else if (ident === "/" && isNum(v1) && isNum(v2)) {
+        return Result.ok(v1 / v2);
+      } else if (ident === "%" && isNum(v1) && isNum(v2)) {
+        return Result.ok(v1 % v2);
+      } else if (ident === "@" && Array.isArray(v1) && isNum(v2)) {
+        return 0 <= v2 && v2 < v1.length
+          ? Result.ok(v1.at(v2) as Value)
+          : Result.err("index out of bounds");
+      } else if (ident === "push" && Array.isArray(v1)) {
+        return Result.ok([...v1, v2]);
+      } else if (ident === "take" && isStream(v1) && isNum(v2)) {
+        const { func, seed } = v1;
+        return Array(v2 - 1).fill(0).reduce<EvalResult<Value>>(
           (acc, _) =>
             Result.bind(acc, (val) => evalFunc(func.ident, [val], [], funcs)),
           evalFunc(func.ident, [seed], [], funcs),
         );
       } else if (ident === "while") {
         return Result.err("TODO");
-      } else if (ident === "iterate") {
-        const val = v1 as Value;
-        const name = v2 as string;
-        const func = funcs.find((func) =>
-          func.ident === name && func.params.length === 1
-        );
-        if (func) {
-          return Result.ok({ kind: "stream", func, seed: val });
-        }
-        return Result.err(`could not find function that matched "${name}"`);
-      } else if (ident === "neg") {
-        return Result.ok(-1 * (v1 as number));
-      } else if (ident === "length") {
-        return Result.ok((v1 as Value[]).length);
-      } else if (ident === "pop") {
-        return Result.ok((v1 as Value[]).slice(0, -1));
+      } else if (ident === "iterate" && typeof v2 === "string") {
+        const func = funcs.find((f) => f.ident === v2 && f.params.length === 1);
+        return func
+          ? Result.ok({ kind: "stream", func, seed: v1 })
+          : Result.err(`could not find function that matched "${v2}"`);
+      } else if (ident === "neg" && isNum(v1)) {
+        return Result.ok(-1 * v1);
+      } else if (ident === "length" && Array.isArray(v1)) {
+        return Result.ok(v1.length);
+      } else if (ident === "pop" && Array.isArray(v1)) {
+        return Result.ok(v1.slice(0, -1));
       } else if (ident === "?") {
         return Result.err("TODO");
       } else {
-        return Result.err(`could not find function that matched "${ident}"`);
+        return Result.err(
+          `cannot evaluate ${ident}(${
+            values.map((v) => JSON.stringify(v)).join(", ")
+          })`,
+        );
       }
     },
   );
@@ -169,6 +166,15 @@ function evalBuiltIn(
 function typeOf<T>(x: T): string {
   if (Array.isArray(x)) return "array";
   return typeof x;
+}
+
+function isNum(value: Value): value is number {
+  return typeof value === "number" && Number.isFinite(value);
+}
+
+function isStream(value: Value): value is Stream {
+  if (Array.isArray(value)) return false;
+  return typeof value === "object" && value.kind === "stream";
 }
 
 function assertNever(x: never): never {
