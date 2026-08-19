@@ -50,8 +50,18 @@ export function list<T>(p: Parser<T>, delim: string = ","): Parser<T[]> {
 }
 
 // AST PARSERS
+export const unOp: Parser<string> = oneOf(
+  word("neg"),
+  word("length"),
+  word("pop"),
+);
+
 export const binOp: Parser<string> = oneOf(
   char("="),
+  word("/="),
+  word(">="),
+  char(">"),
+  word("<="),
   char(">"),
   char("<"),
   char("|"),
@@ -63,11 +73,12 @@ export const binOp: Parser<string> = oneOf(
   char("%"),
   char("@"),
   word("push"),
-  word("pop"),
+  word("take"),
+  word("while"),
   word("iterate"),
 );
 
-export const ternOp: Parser<string> = oneOf(char("?"), word("fold"));
+export const ternOp: Parser<string> = char("?");
 
 export const isAlpha = (grapheme: string): boolean =>
   (/^[a-zA-Z]$/).test(grapheme);
@@ -113,6 +124,11 @@ export function call(): Parser<Call> {
     right(
       trimStart(char(".")),
       oneOf(
+        map2(
+          unOp,
+          word("()"),
+          (ident, arg) => ({ kind: "call", ident, args: [arg] } satisfies Call),
+        ),
         map2(
           binOp,
           wrap("(", expr(), ")"),

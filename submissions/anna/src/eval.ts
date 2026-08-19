@@ -98,55 +98,70 @@ function evalBuiltIn(
     Result.mapM(exprs.map((expr) => evalExpr(expr, varmap, funcs))),
     (values) => {
       const arity = values.length;
-      const [t1, t2] = values.map(typeOf);
-      if (arity === 2) {
-        if (t1 === "number" && t2 === "number") {
-          const v1 = values[0] as number;
-          const v2 = values[1] as number;
-          if (ident === "+") return Result.ok(v1 + v2);
-          if (ident === "-") return Result.ok(v1 - v2);
-          if (ident === "*") return Result.ok(v1 * v2);
-          if (ident === "/") return Result.ok(v1 / v2);
-          if (ident === "=") return Result.ok(Number(v1 === v2));
-          if (ident === "%") return Result.ok(v1 % v2);
-          if (ident === "<") return Result.ok(Number(v1 < v2));
-          if (ident === ">") return Result.ok(Number(v1 > v2));
-          if (ident === "|") return Result.ok(v1 || v2);
-          if (ident === "&") return Result.ok(v1 && v2);
-        } else if (ident === "@" && t1 === "array" && t2 === "number") {
-          const v1 = values[0] as Value[];
-          const v2 = values[1] as number;
-          return v1.length
-            ? Result.ok(v1.at(v2) as Value)
-            : Result.err("cannot pop an empty list");
-        } else if (["push", "pop"].includes(ident) && t1 === "array") {
-          const v1 = values[0] as Value[];
-          const v2 = values[1] as Value;
-          if (ident === "push") return Result.ok([...v1, v2]);
-          if (ident === "pop") return Result.ok(v1.slice(0, -1)); // this is wrong -- this should be arity 1
-        } else if (
-          ident === "iterate" && ["number", "array"].includes(t1) &&
-          t2 === "string"
-        ) {
-          const val = values[0] as Value;
-          const name = values[1] as string;
-          const func = funcs.find((func) =>
-            func.ident === name && func.params.length === 1
-          );
-          if (func) {
-            return Result.ok({ kind: "stream", func, seed: val });
-          }
-        } else if (ident === "take" && t1 == "object" && t2 === "number") {
-          const { func, seed } = values[0] as Stream;
-          const num = values[1] as number;
-          return Array(num - 1).fill(0).reduce<EvalResult<Value>>(
-            (acc, _) =>
-              Result.bind(acc, (val) => evalFunc(func.ident, [val], [], funcs)),
-            evalFunc(func.ident, [seed], [], funcs),
-          );
+      const [v1, v2, v3] = values;
+      const [t1, t2, t3] = values.map(typeOf);
+
+      if (ident === "=") {
+        return Result.ok(Number(JSON.stringify(v1) === JSON.stringify(v2)));
+      } else if (ident === "/=") {
+        return Result.ok(Number(JSON.stringify(v1) !== JSON.stringify(v2)));
+      } else if (ident === ">=") {
+        return Result.ok(Number(v1 >= v2));
+      } else if (ident === ">") {
+        return Result.ok(Number(v1 > v2));
+      } else if (ident === "<=") {
+        return Result.ok(Number(v1 <= v2));
+      } else if (ident === "<") {
+        return Result.ok(Number(v1 < v2));
+      } else if (ident === "|") {
+        return Result.ok(Number(v1 || v2));
+      } else if (ident === "&") {
+        return Result.ok(Number(v1 && v2));
+      } else if (ident === "+") {
+        return Result.ok((v1 as number) + (v2 as number));
+      } else if (ident === "*") {
+        return Result.ok((v1 as number) * (v2 as number));
+      } else if (ident === "-") {
+        return Result.ok((v1 as number) - (v2 as number));
+      } else if (ident === "/") {
+        return Result.ok((v1 as number) / (v2 as number));
+      } else if (ident === "%") {
+        return Result.ok((v1 as number) % (v2 as number));
+      } else if (ident === "@") {
+        return Result.ok((v1 as Value[])[v2 as number]);
+      } else if (ident === "push") {
+        return Result.ok([...(v1 as Value[]), v2]);
+      } else if (ident === "take") {
+        const { func, seed } = v1 as Stream;
+        const num = v2 as number;
+        return Array(num - 1).fill(0).reduce<EvalResult<Value>>(
+          (acc, _) =>
+            Result.bind(acc, (val) => evalFunc(func.ident, [val], [], funcs)),
+          evalFunc(func.ident, [seed], [], funcs),
+        );
+      } else if (ident === "while") {
+        return Result.err("TODO");
+      } else if (ident === "iterate") {
+        const val = v1 as Value;
+        const name = v2 as string;
+        const func = funcs.find((func) =>
+          func.ident === name && func.params.length === 1
+        );
+        if (func) {
+          return Result.ok({ kind: "stream", func, seed: val });
         }
+        return Result.err(`could not find function that matched "${name}"`);
+      } else if (ident === "neg") {
+        return Result.ok(-1 * (v1 as number));
+      } else if (ident === "length") {
+        return Result.ok((v1 as Value[]).length);
+      } else if (ident === "pop") {
+        return Result.ok((v1 as Value[]).slice(0, -1));
+      } else if (ident === "?") {
+        return Result.err("TODO");
+      } else {
+        return Result.err(`could not find function that matched "${ident}"`);
       }
-      return Result.err(`could not find function that matched "${ident}"`);
     },
   );
 }

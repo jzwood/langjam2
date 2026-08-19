@@ -30,19 +30,19 @@ replace value with <expression>
 floats:
 
 ```
-+, -, *, /, >, >=, =, /=
++, -, *, /, >, <, >=, <=, =, /=, |, &, %, neg
 ```
 
 lists:
 
 ```
-push, pop, fold, @
+push, pop, length, @
 ```
 
 streams:
 
 ```
-take
+take, while
 ```
 
 ### looping
@@ -52,21 +52,18 @@ take
 example:
 
 ```
-replace incr(x) with { x.+(1) }
+replace step(x) with { x.*(x.+(1)) }
 replace factorial(n) with {
-  1.iterate(incr).take(n).fold(*, 1)
+  1.iterate(step).take(n.-(1))
 }
 
 replace nextfib(list) with {
-  replace fst with list.@(0)
-  replace snd with list.@(1)
-  [snd, fst.+(snd)]
-}
-replace fibalg(acc, pair) with {
-  acc.push(pair.@(2))
+  replace last with list.@(list.length().-(1))
+  replace penult with list.@(list.length().-(2))
+  list.push(last.+(penult))
 }
 replace fib(n) with {
-  [1, 1].iterate(nextfib).take(n).fold(fibalg, [])
+  [1, 1].iterate(nextfib).take(n)
 }
 ```
 
@@ -90,9 +87,10 @@ SCOPE := '{' { ASSIGN_VAR } EXPR '}'
 ASSIGN_VAR := 'replace' IDENT 'with' EXPR
 PARAMS := IDENT { ',' IDENT } | ""
 ASSIGN_FUNC := 'replace' IDENT '(' PARAMS ')' SCOPE
-BIN_OPS := '=' | '>' | '<' | '|' | '&' | '+' | '*' | '-' | '/' | '%' | 'push' | 'pop' | 'iterate' | '@'
-TERN_OPS := '?' | 'fold'
-CALL := '.' [ BIN_OPS '(' EXPR ')' | TERN_OPS '(' EXPR ',' EXPR ')' |  IDENT '(' EXPRS ')' ]
+UN_OPS := '-' | 'length'
+BIN_OPS := '=' | '/=' | '>' | '<' | '|' | '&' | '+' | '*' | '-' | '/' | '%' | '@' | 'push' | 'pop' | 'iterate' | 'take' | 'while'
+TERN_OPS := '?'
+CALL := '.' [ UN_OPS '()' | BIN_OPS '(' EXPR ')' | TERN_OPS '(' EXPR ',' EXPR ')' |  IDENT '(' EXPRS ')' ]
 EXPRS := EXPR { ',' EXPR } | ""
 VALUE := '[' EXPRS '] | NUMBER | IDENT;
 EXPR := VALUE { CALL }

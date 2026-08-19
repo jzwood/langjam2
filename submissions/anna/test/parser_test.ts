@@ -212,14 +212,13 @@ Deno.test(function identTest() {
 });
 
 Deno.test(function nonEmptyListTest() {
-  resultIs(nonEmptyList(binOp)("=, +, *, -, /, push, pop, @, %", CURSOR), [
+  resultIs(nonEmptyList(binOp)("=, +, *, -, /, push, @, %", CURSOR), [
     "=",
     "+",
     "*",
     "-",
     "/",
     "push",
-    "pop",
     "@",
     "%",
   ]);
