@@ -101,6 +101,12 @@ Kickoff on Fri July 31st. Submission deadline Sun Aug 9th (end of day).
   Please use github <a href="https://github.com/jzwood/langjam2/issues">issues</a> for additional questions, comments, and clarifications.
 </details>
 
+# AWARDS
+
+- **Top pick**: [Kudzu](/submissions/kudzu/README.md) by [hellerve](https://github.com/hellerve)
+- **Runner up**: [Fox](/submissions/fox/README.md) by [demaere-oiie](https://github.com/demaere-oiie)
+- **Honorable mention**: [Hieros](/submissions/hieros/README.md) by [tobynorth](https://github.com/tobynorth)
+
 ## SUPPORTERS
 
 1. [CoRecursive](https://corecursive.com/) podcast
