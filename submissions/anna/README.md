@@ -28,7 +28,7 @@ Intead you have
 
 The ANNA interpreter is a deno CLI tested with Deno 2.9.3 (x86_64 apple-darwin).
 
-Checkout the anna playground [here](./playground/).
+Checkout the anna playground [here](https://jzwood.github.io/langjam2/submissions/anna/playground/).
 
 ## AI USAGE
 
