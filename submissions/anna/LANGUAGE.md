@@ -52,18 +52,29 @@ take, while
 example:
 
 ```
-replace step(x) with { x.*(x.+(1)) }
-replace factorial(n) with {
-  1.iterate(step).take(n.-(1))
+replace rangenext(list) with {
+  replace next with list.last().+(1)
+  list.push(next)
+}
+
+replace range(a, n) with {
+  [a].iterate(rangenext).take(n)
+}
+
+replace last(list) with {
+  list.@(list.length().-(1))
 }
 
 replace nextfib(list) with {
-  replace last with list.@(list.length().-(1))
   replace penult with list.@(list.length().-(2))
-  list.push(last.+(penult))
+  list.push(penult.+(list.last()))
 }
 replace fib(n) with {
   [1, 1].iterate(nextfib).take(n)
+}
+
+main {
+  1.range(4)
 }
 ```
 
