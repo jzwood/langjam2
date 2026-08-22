@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <title>ANNA Playground</title>
+    <title>anna playground</title>
     <style>
     html,
     body,
@@ -40,12 +40,24 @@
         autocomplete="off"
         spellcheck="false"
       >
-replace incr(n) with {
-  1.+(n)
+replace next(tuple) with {
+  replace counter with tuple.@(0).-(1)
+  [counter, tuple.@(1).*(counter)]
+}
+
+replace aboveone(tuple) with {
+  tuple.@(0)./=(1)
+}
+
+replace factorial(x) with {
+  [x, x]
+  .iterate(next)
+  .while(aboveone)
+  .@(1)
 }
 
 main {
-  0.iterate(incr).take(5)
+  5.factorial()
 }
       </textarea>
       <div>
