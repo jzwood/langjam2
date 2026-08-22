@@ -310,21 +310,16 @@ function evalBuiltIn(ident2, exprs2, varmap, funcs) {
     } else if (ident2 === "%" && isNum(v1) && isNum(v2)) {
       return ok(v1 % v2);
     } else if (ident2 === "@" && Array.isArray(v1) && isNum(v2)) {
-      return 0 <= v2 && v2 < v1.length ? ok(v1.at(v2)) : err("index out of bounds");
+      return -v1.length <= v2 && v2 < v1.length ? ok(v1.at(v2)) : err("index out of bounds");
     } else if (ident2 === "push" && Array.isArray(v1)) {
       return ok([
         ...v1,
         v2
       ]);
     } else if (ident2 === "take" && isStream(v1) && isNum(v2)) {
-      const { func, seed } = v1;
-      return Array(v2 - 1).fill(0).reduce((acc, _) => bind(acc, (val) => evalFunc(func.ident, [
-        val
-      ], [], funcs)), evalFunc(func.ident, [
-        seed
-      ], [], funcs));
-    } else if (ident2 === "while") {
-      return err("TODO");
+      return iterateN(v1, funcs, v2 - 1);
+    } else if (ident2 === "while" && isStream(v1) && typeof v2 === "string") {
+      return iterateUntil(v1, funcs, v2);
     } else if (ident2 === "iterate" && typeof v2 === "string") {
       const func = funcs.find((f) => f.ident === v2 && f.params.length === 1);
       return func ? ok({
@@ -338,12 +333,30 @@ function evalBuiltIn(ident2, exprs2, varmap, funcs) {
       return ok(v1.length);
     } else if (ident2 === "pop" && Array.isArray(v1)) {
       return ok(v1.slice(0, -1));
-    } else if (ident2 === "?") {
-      return err("TODO");
+    } else if (ident2 === "?" && isNum(v1)) {
+      return ok(v1 ? v2 : v3);
     } else {
       return err(`cannot evaluate ${ident2}(${values.map((v) => JSON.stringify(v)).join(", ")})`);
     }
   });
+}
+function iterateN({ func, seed }, funcs, n) {
+  return Array(n).fill(0).reduce((acc, _) => bind(acc, (val) => evalFunc(func.ident, [
+    val
+  ], [], funcs)), evalFunc(func.ident, [
+    seed
+  ], [], funcs));
+}
+function iterateUntil({ func, seed }, funcs, until) {
+  return bind(evalFunc(until, [
+    seed
+  ], [], funcs), (resume) => !resume ? ok(seed) : bind(evalFunc(func.ident, [
+    seed
+  ], [], funcs), (val) => iterateUntil({
+    kind: "stream",
+    func,
+    seed: val
+  }, funcs, until)));
 }
 function isNum(value2) {
   return typeof value2 === "number" && Number.isFinite(value2);

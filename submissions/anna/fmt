@@ -2,4 +2,4 @@
 
 deno fmt src
 deno fmt test
-deno fmt playground
+deno fmt playground --ignore=./playground/build.js

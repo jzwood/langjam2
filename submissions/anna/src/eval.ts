@@ -125,20 +125,15 @@ function evalBuiltIn(
       } else if (ident === "%" && isNum(v1) && isNum(v2)) {
         return Result.ok(v1 % v2);
       } else if (ident === "@" && Array.isArray(v1) && isNum(v2)) {
-        return 0 <= v2 && v2 < v1.length
+        return -v1.length <= v2 && v2 < v1.length
           ? Result.ok(v1.at(v2) as Value)
           : Result.err("index out of bounds");
       } else if (ident === "push" && Array.isArray(v1)) {
         return Result.ok([...v1, v2]);
       } else if (ident === "take" && isStream(v1) && isNum(v2)) {
-        const { func, seed } = v1;
-        return Array(v2 - 1).fill(0).reduce<EvalResult<Value>>(
-          (acc, _) =>
-            Result.bind(acc, (val) => evalFunc(func.ident, [val], [], funcs)),
-          evalFunc(func.ident, [seed], [], funcs),
-        );
-      } else if (ident === "while") {
-        return Result.err("TODO");
+        return iterateN(v1, funcs, v2 - 1);
+      } else if (ident === "while" && isStream(v1) && typeof v2 === "string") {
+        return iterateUntil(v1, funcs, v2);
       } else if (ident === "iterate" && typeof v2 === "string") {
         const func = funcs.find((f) => f.ident === v2 && f.params.length === 1);
         return func
@@ -150,8 +145,8 @@ function evalBuiltIn(
         return Result.ok(v1.length);
       } else if (ident === "pop" && Array.isArray(v1)) {
         return Result.ok(v1.slice(0, -1));
-      } else if (ident === "?") {
-        return Result.err("TODO");
+      } else if (ident === "?" && isNum(v1)) {
+        return Result.ok(v1 ? v2 : v3);
       } else {
         return Result.err(
           `cannot evaluate ${ident}(${
@@ -163,9 +158,31 @@ function evalBuiltIn(
   );
 }
 
-function typeOf<T>(x: T): string {
-  if (Array.isArray(x)) return "array";
-  return typeof x;
+function iterateN(
+  { func, seed }: Stream,
+  funcs: Func[],
+  n: number,
+): EvalResult<Value> {
+  return Array(n).fill(0).reduce<EvalResult<Value>>(
+    (acc, _) =>
+      Result.bind(acc, (val) => evalFunc(func.ident, [val], [], funcs)),
+    evalFunc(func.ident, [seed], [], funcs),
+  );
+}
+
+function iterateUntil(
+  { func, seed }: Stream,
+  funcs: Func[],
+  until: string,
+): EvalResult<Value> {
+  return Result.bind(
+    evalFunc(until, [seed], [], funcs),
+    (resume) =>
+      !resume
+        ? Result.ok(seed)
+        : Result.bind(evalFunc(func.ident, [seed], [], funcs), (val) =>
+          iterateUntil({ kind: "stream", func, seed: val }, funcs, until)),
+  );
 }
 
 function isNum(value: Value): value is number {
